@@ -36,7 +36,7 @@ public class PersonController {
     @PostMapping("/person")
     public Person addPerson(
             @Valid @RequestBody PersonCreateDTO personDTO
-    ) {
+    ) throws ValidationException {
         return personService.addPerson(personDTO);
     }
 

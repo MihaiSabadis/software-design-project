@@ -13,6 +13,8 @@ import java.util.UUID;
 public interface PersonRepository extends JpaRepository<Person, UUID> {
     Optional<Person> findByEmail(String email);
 
+    boolean existsByEmail(String email);
+
     // JPA Derived Query
     Optional<Person> findByEmailAndAge(String email, Integer age);
 

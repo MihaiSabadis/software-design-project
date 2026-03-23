@@ -3,6 +3,7 @@ package com.andrei.demo.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -12,6 +13,10 @@ public class Person {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private Role role;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -23,4 +28,15 @@ public class Person {
 
     @Column(name = "email", nullable = false, unique = true)
     private String email;
+
+    @ManyToMany
+    @JoinTable(
+            name = "player_library",
+            joinColumns = @JoinColumn(name="person_id"),
+            inverseJoinColumns = @JoinColumn(name = "game_id")
+    )
+    private List<VideoGame> ownedGames;
+
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Review> writtenReviews;
 }

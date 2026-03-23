@@ -20,9 +20,15 @@ public class PersonService {
         return personRepository.findAll();
     }
 
-    public Person addPerson(PersonCreateDTO personDTO) {
+    public Person addPerson(PersonCreateDTO personDTO) throws ValidationException {
+
+        if (personRepository.existsByEmail(personDTO.getEmail())) {
+            throw new ValidationException("Email already exists!");
+        }
+
         Person person = new Person();
 
+        person.setRole(personDTO.getRole());
         person.setName(personDTO.getName());
         person.setAge(personDTO.getAge());
         person.setEmail(personDTO.getEmail());
@@ -39,6 +45,12 @@ public class PersonService {
             throw new ValidationException("Person with id " + uuid + " not found");
         }
         Person existingPerson = personOptional.get();
+
+        // check if they are trying to change their email to one that belongs to someone else
+        if (!existingPerson.getEmail().equals(person.getEmail()) &&
+                personRepository.existsByEmail(person.getEmail())) {
+            throw new ValidationException("Email already exists!");
+        }
 
         existingPerson.setName(person.getName());
         existingPerson.setAge(person.getAge());

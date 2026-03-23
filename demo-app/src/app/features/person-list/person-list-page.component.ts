@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';
+import {ChangeDetectionStrategy, Component, DestroyRef, effect, inject} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -13,6 +13,9 @@ import {
 } from '../../components/person-form-dialog/person-form-dialog.component';
 import { CreatePersonDto, Person, UpdatePersonDto } from '../../models/person.model';
 import { PersonListStore } from './person-list.store';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { HttpErrorResponse } from '@angular/common/http';
+
 
 @Component({
   selector: 'app-person-list-page',
@@ -23,16 +26,28 @@ import { PersonListStore } from './person-list.store';
 })
 export class PersonListPageComponent {
   private readonly dialog = inject(MatDialog);
+  private readonly snackBar = inject(MatSnackBar);
   private readonly store = inject(PersonListStore);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly persons = this.store.persons;
   protected readonly hasError = this.store.hasError;
   protected readonly isLoading = this.store.isLoading;
-  protected readonly displayedColumns = ['name', 'age', 'email', 'actions'];
+  protected readonly displayedColumns = ['name', 'age', 'email', 'role', 'actions'];
 
   constructor() {
     this.store.load();
+
+    effect(() => {
+      const errorMessage = this.hasError();
+
+      if (errorMessage) {
+        this.snackBar.open(errorMessage, 'Got it', {
+          duration: 5000,
+          panelClass: ['error-snackbar'] // gives it a class for red CSS
+        });
+      }
+    });
   }
 
   protected openCreateDialog(): void {

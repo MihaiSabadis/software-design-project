@@ -1,5 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { finalize } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CreatePersonDto, Person, UpdatePersonDto } from '../../models/person.model';
 import { PersonService } from '../../services/person.service';
 
@@ -9,7 +10,8 @@ export class PersonListStore {
   private readonly pendingRequests = signal(0);
 
   readonly persons = signal<Person[]>([]);
-  readonly hasError = signal(false);
+  // changed: Now holds a string message or null
+  readonly hasError = signal<string | null>(null);
   readonly isLoading = computed(() => this.pendingRequests() > 0);
 
   private beginRequest(): void {
@@ -20,27 +22,36 @@ export class PersonListStore {
     this.pendingRequests.update((count) => Math.max(0, count - 1));
   }
 
+  // helper to extract the exact message from Spring Boot
+  private extractError(err: HttpErrorResponse): string {
+    if (typeof err.error === 'string') return err.error;
+    if (err.error?.message) return err.error.message;
+    // catch validation error objects like { "email": "Already exists" }
+    if (err.error && typeof err.error === 'object') return JSON.stringify(err.error);
+    return 'Validation failed!';
+  }
+
   load(): void {
-    this.hasError.set(false);
+    this.hasError.set(null); // Reset to null
     this.beginRequest();
     this.personService
       .getAll()
       .pipe(finalize(() => this.endRequest()))
       .subscribe({
         next: (data) => this.persons.set(data),
-        error: () => this.hasError.set(true),
+        error: (err: HttpErrorResponse) => this.hasError.set(this.extractError(err)), // Save message!
       });
   }
 
   create(dto: CreatePersonDto): void {
-    this.hasError.set(false);
+    this.hasError.set(null);
     this.beginRequest();
     this.personService
       .create(dto)
       .pipe(finalize(() => this.endRequest()))
       .subscribe({
         next: (created) => this.persons.update((list) => [...list, created]),
-        error: () => this.hasError.set(true),
+        error: (err: HttpErrorResponse) => this.hasError.set(this.extractError(err)),
       });
   }
 
@@ -50,7 +61,7 @@ export class PersonListStore {
 
     const payload: CreatePersonDto = { ...dto, password: existing.password };
 
-    this.hasError.set(false);
+    this.hasError.set(null);
     this.beginRequest();
     this.personService
       .update(id, payload)
@@ -60,12 +71,12 @@ export class PersonListStore {
           this.persons.update((list) =>
             list.map((person) => (person.id === updated.id ? updated : person)),
           ),
-        error: () => this.hasError.set(true),
+        error: (err: HttpErrorResponse) => this.hasError.set(this.extractError(err)),
       });
   }
 
   remove(id: string): void {
-    this.hasError.set(false);
+    this.hasError.set(null);
     this.beginRequest();
     this.personService
       .delete(id)
@@ -73,7 +84,7 @@ export class PersonListStore {
       .subscribe({
         next: () =>
           this.persons.update((list) => list.filter((person) => person.id !== id)),
-        error: () => this.hasError.set(true),
+        error: (err: HttpErrorResponse) => this.hasError.set(this.extractError(err)),
       });
   }
 }
