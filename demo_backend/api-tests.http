@@ -1,0 +1,49 @@
+### 🎮 1. GET ALL GAMES (Should be empty at first)
+GET http://localhost:8080/videogames
+
+### 🎮 2. CREATE A GAME (Success)
+POST http://localhost:8080videogames
+Content-Type: application/json
+
+{
+  "title": "Elden Ring",
+  "price": 59.99
+}
+
+### 🎮 3. CREATE DUPLICATE GAME (Should fail with 400 Bad Request!)
+# This proves to your professor you handle edge cases!
+POST http://localhost:8080/videogames
+Content-Type: application/json
+
+{
+  "title": "Elden Ring",
+  "price": 39.99
+}
+
+
+### 👤 4. GET ALL PERSONS (To copy an ID)
+# Run this, look at the response, and copy the "id" of one of your users!
+GET http://localhost:8080/persons
+
+### ⭐ 5. CREATE A REVIEW (Success)
+POST http://localhost:8080/reviews
+Content-Type: application/json
+
+{
+  "score": 10,
+  "comment": "Masterpiece. I died 400 times.",
+  "authorId": "c8c7e5f9-b9c4-490a-bd51-2f8cfc042dee",
+  "gameId": "e189a211-2fc2-43bc-8a9d-0506f8399ef9"
+}
+
+### ⭐ 6. CREATE DUPLICATE REVIEW (Should fail with 400 Bad Request!)
+# Run the exact same test again to prove a user can only review a game once!
+POST http://localhost:8080/reviews
+Content-Type: application/json
+
+{
+  "score": 1,
+  "comment": "I changed my mind, this game is too hard.",
+  "authorId": "PASTE-THE-SAME-PERSON-UUID-HERE",
+  "gameId": "PASTE-THE-SAME-GAME-UUID-HERE"
+}
