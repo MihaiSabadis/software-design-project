@@ -26,20 +26,20 @@ export class PersonListStore {
   private extractError(err: HttpErrorResponse): string {
     if (typeof err.error === 'string') return err.error;
     if (err.error?.message) return err.error.message;
-    // catch validation error objects like { "email": "Already exists" }
+    // catch validation error objects
     if (err.error && typeof err.error === 'object') return JSON.stringify(err.error);
     return 'Validation failed!';
   }
 
   load(): void {
-    this.hasError.set(null); // Reset to null
+    this.hasError.set(null);
     this.beginRequest();
     this.personService
       .getAll()
       .pipe(finalize(() => this.endRequest()))
       .subscribe({
         next: (data) => this.persons.set(data),
-        error: (err: HttpErrorResponse) => this.hasError.set(this.extractError(err)), // Save message!
+        error: (err: HttpErrorResponse) => this.hasError.set(this.extractError(err)),
       });
   }
 
