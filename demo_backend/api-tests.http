@@ -47,3 +47,28 @@ Content-Type: application/json
   "authorId": "PASTE-THE-SAME-PERSON-UUID-HERE",
   "gameId": "PASTE-THE-SAME-GAME-UUID-HERE"
 }
+
+### 🎮 PATCH A GAME (Change ONLY the price, leave the title alone)
+PATCH http://localhost:8080/videogames/e189a211-2fc2-43bc-8a9d-0506f8399ef9
+Content-Type: application/json
+
+{
+  "price": 45.99
+}
+
+### ⭐ PATCH A REVIEW (Change ONLY the comment, leave the score alone)
+PATCH http://localhost:8080/reviews/99966d43-0735-4826-8183-264b3dae9194
+Content-Type: application/json
+
+{
+  "comment": "I finally beat the boss! Changing my review, this game is awesome."
+}
+
+### 🎮 9. ADD A GAME TO A USER'S LIBRARY (Success)
+# Copy a Person ID and a Game ID from your previous GET requests and paste them below
+POST http://localhost:8080/person/c0529015-f8b0-488b-bbde-25b722acc3f4/games/e189a211-2fc2-43bc-8a9d-0506f8399ef9
+
+
+### 🚫 10. EDGE CASE: ADD THE SAME GAME AGAIN (Should fail with 400 Bad Request)
+# Run the exact same request a second time to prove your M:M edge case works!
+POST http://localhost:8080/persons/PASTE-PERSON-UUID-HERE/games/PASTE-GAME-UUID-HERE

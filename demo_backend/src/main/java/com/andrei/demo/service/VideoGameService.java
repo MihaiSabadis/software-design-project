@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -48,6 +49,26 @@ public class VideoGameService {
 
         existingVideoGame.setTitle(videoGame.getTitle());
         existingVideoGame.setPrice(videoGame.getPrice());
+
+        return videoGameRepository.save(existingVideoGame);
+    }
+
+    public VideoGame patchVideoGame(UUID uuid, Map<String, Object> updates){
+        VideoGame existingVideoGame = videoGameRepository.findById(uuid)
+                .orElseThrow(()-> new ValidationException("Video Game not found."));
+
+        if(updates.containsKey("title")){
+            String newTitle = (String) updates.get("title");
+
+            if(!existingVideoGame.getTitle().equals(newTitle) && videoGameRepository.existsByTitle(newTitle)){
+                throw new ValidationException("Title already exists.");
+            }
+            existingVideoGame.setTitle(newTitle);
+        }
+
+        if (updates.containsKey("price")){
+            existingVideoGame.setPrice( (Double) updates.get("price"));
+        }
 
         return videoGameRepository.save(existingVideoGame);
     }

@@ -13,41 +13,47 @@ import java.util.UUID;
 
 
 @RestController
+@RequestMapping("/person")
 @AllArgsConstructor
 @CrossOrigin
 public class PersonController {
     private final PersonService personService;
 
-    @GetMapping("/person")
+    @GetMapping
     public List<Person> getPeople() {
         return personService.getPeople();
     }
 
-    @GetMapping("/person/{uuid}")
+    @GetMapping("{uuid}")
     public Person getPersonById(@PathVariable UUID uuid) {
         return personService.getPersonById(uuid);
     }
 
-    @GetMapping("/person/email/{email}")
+    @GetMapping("/email/{email}")
     public Person getPersonByEmail(@PathVariable String email) {
         return personService.getPersonByEmail(email);
     }
 
-    @PostMapping("/person")
+    @PostMapping
     public Person addPerson(
             @Valid @RequestBody PersonCreateDTO personDTO
     ) throws ValidationException {
         return personService.addPerson(personDTO);
     }
 
-    @PutMapping("/person/{uuid}")
+    @PostMapping("/{personId}/games/{gameId}")
+    public Person addGameToLibrary(@PathVariable UUID personId, @PathVariable UUID gameId) throws ValidationException {
+        return personService.addGameToLibrary(personId, gameId);
+    }
+
+    @PutMapping("/{uuid}")
     public Person updatePerson(@PathVariable UUID uuid,
                                @RequestBody Person person)
             throws ValidationException {
         return personService.updatePerson(uuid, person);
     }
 
-    @DeleteMapping("/person/{uuid}")
+    @DeleteMapping("/{uuid}")
     public void deletePerson(@PathVariable UUID uuid) {
         personService.deletePerson(uuid);
     }

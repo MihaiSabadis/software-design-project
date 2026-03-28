@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
     public Map<String, String> handleCustomValidationException(ValidationException ex) {
         Map<String, String> errorMap = new HashMap<>();
 
-        // we put the message inside a "message" key so your Angular extractError method finds it instantly!
+        // we put the message inside a "message" key so Angular extractError method finds it instantly.
         errorMap.put("message", ex.getMessage());
 
         log.error("Custom validation error: {}", ex.getMessage());

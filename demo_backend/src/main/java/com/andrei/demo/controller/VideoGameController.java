@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -46,6 +47,12 @@ public class VideoGameController {
                                      @RequestBody VideoGame videoGame)
             throws ValidationException {
         return videoGameService.updateVideoGame(uuid, videoGame);
+    }
+
+    @PatchMapping("/{uuid}")
+    public VideoGame patchVideoGame(@PathVariable UUID uuid, @RequestBody Map<String,
+                Object> updates) throws ValidationException{
+        return videoGameService.patchVideoGame(uuid,updates);
     }
 
     @DeleteMapping("/{uuid}")

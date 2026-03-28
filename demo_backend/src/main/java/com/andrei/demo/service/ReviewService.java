@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -53,7 +54,7 @@ public class ReviewService {
         Optional<Review> reviewOptional = reviewRepository.findById(uuid);
 
         if (reviewOptional.isEmpty()){
-            throw new ValidationException("Review with ID " + uuid.toString() + " not found.");
+            throw new ValidationException("Review with ID " + uuid + " not found.");
         }
 
         Review existingReview = reviewOptional.get();
@@ -70,5 +71,20 @@ public class ReviewService {
             throw new ValidationException("Cannot delete. Review with ID " + id + " not found.");
         }
         reviewRepository.deleteById(id);
+    }
+
+    public Review patchReview(UUID uuid, Map<String, Object> updates) throws ValidationException {
+        Review existingReview = reviewRepository.findById(uuid)
+                .orElseThrow(()-> new ValidationException("Review with ID " + uuid + " not found."));
+
+        if(updates.containsKey("score")){
+            existingReview.setScore((Integer) updates.get("score"));
+        }
+
+        if(updates.containsKey("comment")){
+            existingReview.setComment((String) updates.get("comment"));
+        }
+
+        return reviewRepository.save(existingReview);
     }
 }

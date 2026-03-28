@@ -3,7 +3,9 @@ package com.andrei.demo.service;
 import com.andrei.demo.config.ValidationException;
 import com.andrei.demo.model.Person;
 import com.andrei.demo.model.PersonCreateDTO;
+import com.andrei.demo.model.VideoGame;
 import com.andrei.demo.repository.PersonRepository;
+import com.andrei.demo.repository.VideoGameRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +17,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class PersonService {
     private final PersonRepository personRepository;
+    private final VideoGameRepository videoGameRepository;
 
     public List<Person> getPeople() {
         return personRepository.findAll();
@@ -87,5 +90,20 @@ public class PersonService {
     public Person getPersonById(UUID uuid) {
         return personRepository.findById(uuid).orElseThrow(
                 () -> new IllegalStateException("Person with id " + uuid + " not found"));
+    }
+
+    public Person addGameToLibrary(UUID personId, UUID gameId) throws ValidationException {
+        Person person = personRepository.findById(personId)
+                .orElseThrow(() -> new ValidationException("Person with ID " + personId + " not found"));
+
+        VideoGame game = videoGameRepository.findById(gameId)
+                .orElseThrow(() -> new ValidationException("Game with ID " + gameId + " not found"));
+
+        if(person.getOwnedGames().contains(game)) {
+            throw new ValidationException("Game already owned by person " + person);
+        }
+
+        person.getOwnedGames().add(game);
+        return personRepository.save(person);
     }
 }
