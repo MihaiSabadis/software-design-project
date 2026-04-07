@@ -74,7 +74,7 @@ public class VideoGameService {
     }
 
     public void deleteVideoGame(UUID id) throws ValidationException {
-        if(videoGameRepository.existsById(id)) {
+        if(!videoGameRepository.existsById(id)) {
             throw new ValidationException("Cannot delete.Video Game with ID" + id + "not found.");
         }
         videoGameRepository.deleteById(id);

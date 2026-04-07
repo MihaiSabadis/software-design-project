@@ -25,9 +25,17 @@ export class PersonListStore {
   // helper to extract the exact message from Spring Boot
   private extractError(err: HttpErrorResponse): string {
     if (typeof err.error === 'string') return err.error;
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-return
     if (err.error?.message) return err.error.message;
     // catch validation error objects
-    if (err.error && typeof err.error === 'object') return JSON.stringify(err.error);
+    if (err.error && typeof err.error === 'object'){
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      const fieldErrors = Object.values(err.error);
+      if(fieldErrors.length > 0){
+        return fieldErrors.join(' | ');
+      }
+    }
     return 'Validation failed!';
   }
 

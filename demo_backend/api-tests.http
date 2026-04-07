@@ -1,74 +1,32 @@
-### 🎮 1. GET ALL GAMES (Should be empty at first)
-GET http://localhost:8080/videogames
+@userId = 23fb1141-5cc9-4996-8a36-b855f060d9bb
+@gameId = 49f6960b-c005-471a-b564-9a70587c625f
 
-### 🎮 2. CREATE A GAME (Success)
-POST http://localhost:8080videogames
-Content-Type: application/json
-
-{
-  "title": "Elden Ring",
-  "price": 59.99
-}
-
-### 🎮 3. CREATE DUPLICATE GAME (Should fail with 400 Bad Request!)
-# This proves to your professor you handle edge cases!
-POST http://localhost:8080/videogames
-Content-Type: application/json
-
-{
-  "title": "Elden Ring",
-  "price": 39.99
-}
-
-
-### 👤 4. GET ALL PERSONS (To copy an ID)
-# Run this, look at the response, and copy the "id" of one of your users!
-GET http://localhost:8080/persons
-
-### ⭐ 5. CREATE A REVIEW (Success)
+### 1. THE REVIEW BOMB ATTEMPT (This SHOULD FAIL with your custom error)
+# Note: Change the URL to whatever your Review creation endpoint is!
 POST http://localhost:8080/reviews
 Content-Type: application/json
 
 {
-  "score": 10,
-  "comment": "Masterpiece. I died 400 times.",
-  "authorId": "c8c7e5f9-b9c4-490a-bd51-2f8cfc042dee",
-  "gameId": "e189a211-2fc2-43bc-8a9d-0506f8399ef9"
-}
-
-### ⭐ 6. CREATE DUPLICATE REVIEW (Should fail with 400 Bad Request!)
-# Run the exact same test again to prove a user can only review a game once!
-POST http://localhost:8080/reviews
-Content-Type: application/json
-
-{
+  "authorId": "{{userId}}",
+  "gameId": "{{gameId}}",
   "score": 1,
-  "comment": "I changed my mind, this game is too hard.",
-  "authorId": "PASTE-THE-SAME-PERSON-UUID-HERE",
-  "gameId": "PASTE-THE-SAME-GAME-UUID-HERE"
+  "comment": "This game is terrible! I totally played it!"
 }
 
-### 🎮 PATCH A GAME (Change ONLY the price, leave the title alone)
-PATCH http://localhost:8080/videogames/e189a211-2fc2-43bc-8a9d-0506f8399ef9
+
+### 2. BUY THE GAME / ADD TO LIBRARY (This should succeed)
+# Note: No JSON body is needed here!
+POST http://localhost:8080/person/{{userId}}/games/{{gameId}}
+Content-Type: application/json
+
+
+### 3. THE VALID REVIEW (This SHOULD SUCCEED now that they own it)
+POST http://localhost:8080/reviews
 Content-Type: application/json
 
 {
-  "price": 45.99
+  "authorId": "{{userId}}",
+  "gameId": "{{gameId}}",
+  "score": 1,
+  "comment": "This game is terrible! I totally played it!"
 }
-
-### ⭐ PATCH A REVIEW (Change ONLY the comment, leave the score alone)
-PATCH http://localhost:8080/reviews/99966d43-0735-4826-8183-264b3dae9194
-Content-Type: application/json
-
-{
-  "comment": "I finally beat the boss! Changing my review, this game is awesome."
-}
-
-### 🎮 9. ADD A GAME TO A USER'S LIBRARY (Success)
-# Copy a Person ID and a Game ID from your previous GET requests and paste them below
-POST http://localhost:8080/person/c0529015-f8b0-488b-bbde-25b722acc3f4/games/e189a211-2fc2-43bc-8a9d-0506f8399ef9
-
-
-### 🚫 10. EDGE CASE: ADD THE SAME GAME AGAIN (Should fail with 400 Bad Request)
-# Run the exact same request a second time to prove your M:M edge case works!
-POST http://localhost:8080/persons/PASTE-PERSON-UUID-HERE/games/PASTE-GAME-UUID-HERE
