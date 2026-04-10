@@ -19,6 +19,9 @@ public class VideoGame {
     @Column(name = "title", nullable = false, unique = true)
     private String title;
 
+    @Column(name = "developer",  nullable = false, unique = true)
+    private String developer;
+
     @Column(name = "price", nullable = false)
     private Double price;
 

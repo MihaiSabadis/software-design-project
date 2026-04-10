@@ -14,7 +14,8 @@ import {
 import { CreatePersonDto, Person, UpdatePersonDto } from '../../models/person.model';
 import { PersonListStore } from './person-list.store';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { HttpErrorResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { LoginStore } from '../login/login.store'
 
 
 @Component({
@@ -29,6 +30,8 @@ export class PersonListPageComponent {
   private readonly snackBar = inject(MatSnackBar);
   private readonly store = inject(PersonListStore);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly loginStore = inject (LoginStore);
+  private readonly router = inject (Router);
 
   protected readonly persons = this.store.persons;
   protected readonly hasError = this.store.hasError;
@@ -48,6 +51,11 @@ export class PersonListPageComponent {
         });
       }
     });
+  }
+
+  protected logout(): void {
+    this.loginStore.logout();
+    void this.router.navigate(['/login']);
   }
 
   protected openCreateDialog(): void {

@@ -66,3 +66,14 @@
 .delete-btn {
   color: #c62828;
 }
+
+
+.page-toolbar {
+  .toolbar-title {
+    font-weight: 500;
+  }
+
+  .toolbar-spacer {
+    flex: 1 1 auto;
+  }
+}
