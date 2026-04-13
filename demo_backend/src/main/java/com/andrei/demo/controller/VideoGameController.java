@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/videogames")
 @AllArgsConstructor
@@ -21,8 +22,20 @@ public class VideoGameController {
     private final VideoGameService videoGameService;
 
     @GetMapping
-    public List<VideoGame> getVideoGames() {
-        return videoGameService.getAllVideoGames();
+    public List<VideoGame> getVideoGames(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String developer,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(defaultValue = "title") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+
+        if (maxPrice == null && developer == null && title == null) {
+            return videoGameService.getAllVideoGames();
+        }
+        else{
+            return videoGameService.getFilteredVideoGames(title,developer,maxPrice,sortBy,sortDir);
+        }
+
     }
 
     @GetMapping("/{uuid}")

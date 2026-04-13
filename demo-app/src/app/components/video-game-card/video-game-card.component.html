@@ -1,0 +1,14 @@
+<div class="card-container">
+  <div class="card-info">
+    <h3>{{ game.title }}</h3>
+    <p class="developer"><strong>Developer:</strong> {{ game.developer || 'Unknown' }}</p>
+  </div>
+
+  <div class="card-actions">
+    <p class="price">${{ game.price }}</p>
+    <button class="btn-primary" (click)="onEdit()">Edit</button>
+    <button class="btn-danger" (click) = "onDelete()">
+      Delete
+    </button>
+  </div>
+</div>

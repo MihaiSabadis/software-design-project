@@ -1,74 +1,72 @@
-### 🎮 1. GET ALL GAMES (Should be empty at first)
-GET http://localhost:8080/videogames
+### =========================================
+### PHASE 1: PREPARATION (Seed the Database)
+### =========================================
 
-### 🎮 2. CREATE A GAME (Success)
-POST http://localhost:8080videogames
-Content-Type: application/json
-
-{
-  "title": "Elden Ring",
-  "price": 59.99
-}
-
-### 🎮 3. CREATE DUPLICATE GAME (Should fail with 400 Bad Request!)
-# This proves to your professor you handle edge cases!
+### 1. Create a cheap Valve game
 POST http://localhost:8080/videogames
 Content-Type: application/json
 
 {
-  "title": "Elden Ring",
-  "price": 39.99
+  "title": "Portal",
+  "price": 9.99,
+  "developer": "Valve"
 }
 
-
-### 👤 4. GET ALL PERSONS (To copy an ID)
-# Run this, look at the response, and copy the "id" of one of your users!
-GET http://localhost:8080/persons
-
-### ⭐ 5. CREATE A REVIEW (Success)
-POST http://localhost:8080/reviews
+### 2. Create an expensive Valve game
+POST http://localhost:8080/videogames
 Content-Type: application/json
 
 {
-  "score": 10,
-  "comment": "Masterpiece. I died 400 times.",
-  "authorId": "c8c7e5f9-b9c4-490a-bd51-2f8cfc042dee",
-  "gameId": "e189a211-2fc2-43bc-8a9d-0506f8399ef9"
+  "title": "Half-Life: Alyx",
+  "price": 59.99,
+  "developer": "Valve"
 }
 
-### ⭐ 6. CREATE DUPLICATE REVIEW (Should fail with 400 Bad Request!)
-# Run the exact same test again to prove a user can only review a game once!
-POST http://localhost:8080/reviews
+### 3. Create a cheap Nintendo game
+POST http://localhost:8080/videogames
 Content-Type: application/json
 
 {
-  "score": 1,
-  "comment": "I changed my mind, this game is too hard.",
-  "authorId": "PASTE-THE-SAME-PERSON-UUID-HERE",
-  "gameId": "PASTE-THE-SAME-GAME-UUID-HERE"
+  "title": "Hollow Knight",
+  "price": 14.99,
+  "developer": "Team Cherry"
 }
 
-### 🎮 PATCH A GAME (Change ONLY the price, leave the title alone)
-PATCH http://localhost:8080/videogames/e189a211-2fc2-43bc-8a9d-0506f8399ef9
+### 4. Create an expensive Nintendo game
+POST http://localhost:8080/videogames
 Content-Type: application/json
 
 {
-  "price": 45.99
+  "title": "Zelda: Breath of the Wild",
+  "price": 69.99,
+  "developer": "Nintendo"
 }
 
-### ⭐ PATCH A REVIEW (Change ONLY the comment, leave the score alone)
-PATCH http://localhost:8080/reviews/99966d43-0735-4826-8183-264b3dae9194
-Content-Type: application/json
 
-{
-  "comment": "I finally beat the boss! Changing my review, this game is awesome."
-}
+### =========================================
+### PHASE 2: TESTING THE FILTERS
+### =========================================
 
-### 🎮 9. ADD A GAME TO A USER'S LIBRARY (Success)
-# Copy a Person ID and a Game ID from your previous GET requests and paste them below
-POST http://localhost:8080/person/c0529015-f8b0-488b-bbde-25b722acc3f4/games/e189a211-2fc2-43bc-8a9d-0506f8399ef9
+### Test A: The Default "Give me everything" (Should return all 4 games)
+### Proves that missing parameters don't break the endpoint.
+GET http://localhost:8080/videogames
 
 
-### 🚫 10. EDGE CASE: ADD THE SAME GAME AGAIN (Should fail with 400 Bad Request)
-# Run the exact same request a second time to prove your M:M edge case works!
-POST http://localhost:8080/persons/PASTE-PERSON-UUID-HERE/games/PASTE-GAME-UUID-HERE
+### Test B: Filter by Developer Only (Should return 2 games)
+### Proves the partial filter works when Price is ignored.
+GET http://localhost:8080/videogames?developer=Valve
+
+
+### Test C: Filter by Max Price Only (Should return 2 games: Portal and Hollow Knight)
+### Proves the partial filter works when Developer is ignored.
+GET http://localhost:8080/videogames?maxPrice=20.00
+
+
+### Test D: Filter by BOTH Developer and Price (Should return exactly 1 game: Portal)
+### Proves that both filters apply simultaneously.
+GET http://localhost:8080/videogames?developer=Valve&maxPrice=15.00
+
+
+### Test E: The "Empty Results" check (Should return an empty array [])
+### Proves your database doesn't crash if no data matches the filters.
+GET http://localhost:8080/videogames?developer=Nintendo&maxPrice=5.00

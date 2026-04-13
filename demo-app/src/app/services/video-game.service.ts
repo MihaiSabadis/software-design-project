@@ -1,22 +1,27 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-
-export interface VideoGame {
-  id?: string;
-  title: string;
-  price: number;
-  developer: string;
-}
+import { VideoGame } from '../models/video-game.model';
+import {VideoGameCreateDTO} from "../models/video-game-create.dto";
 
 @Injectable({ providedIn: 'root' })
 export class VideoGameService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = 'http://localhost:8080/videogames';
 
-  // 1. GET (Read) - cu filtrele de la Tema 2
-  getGames(title?: string, developer?: string, maxPrice?: number): Observable<VideoGame[]> {
-    let params = new HttpParams();
+  addVideoGame(game: VideoGameCreateDTO): Observable<VideoGame> {
+    return this.http.post<VideoGame>(this.apiUrl, game);
+  }
+
+  getVideoGames(
+    title?: string,
+    developer?: string,
+    maxPrice?: number | null,
+    sortBy: string = 'title',
+    sortDir: string = 'asc',
+  ): Observable<VideoGame[]> {
+    let params = new HttpParams().set('sortBy', sortBy).set('sortDir', sortDir);
+
     if (title) params = params.set('title', title);
     if (developer) params = params.set('developer', developer);
     if (maxPrice) params = params.set('maxPrice', maxPrice.toString());
@@ -24,9 +29,11 @@ export class VideoGameService {
     return this.http.get<VideoGame[]>(this.apiUrl, { params });
   }
 
-  deleteGame(id: string): Observable<void> {
+  deleteVideoGame(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  // (Metodele de POST și PUT le vei folosi mai târziu când faci modalul de adăugare)
+  editVideoGame(id: string, game: VideoGameCreateDTO): Observable<VideoGame> {
+    return this.http.put<VideoGame>(`${this.apiUrl}/${id}`, game);
+  }
 }

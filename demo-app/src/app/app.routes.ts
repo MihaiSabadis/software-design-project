@@ -27,6 +27,12 @@ export const routes: Routes = [
       import ('./features/player/player').then((m) => m.Player),
   },
   {
+    path:'videogames',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import ('./features/video-game-list/video-game-list-page.component').then((m) => m.VideoGameListPageComponent),
+  },
+  {
     path: 'error',
     loadComponent: () =>
       import('./features/not-found/not-found-page.component').then((m) => m.NotFoundPageComponent),

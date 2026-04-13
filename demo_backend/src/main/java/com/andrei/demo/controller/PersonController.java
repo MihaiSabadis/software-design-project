@@ -12,10 +12,10 @@ import java.util.List;
 import java.util.UUID;
 
 
+@CrossOrigin
 @RestController
 @RequestMapping("/person")
 @AllArgsConstructor
-@CrossOrigin
 public class PersonController {
     private final PersonService personService;
 

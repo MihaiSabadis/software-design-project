@@ -5,6 +5,7 @@ import com.andrei.demo.model.VideoGameCreateDTO;
 import com.andrei.demo.repository.VideoGameRepository;
 import jakarta.validation.ValidationException;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -85,10 +86,18 @@ public class VideoGameService {
     }
 
     public void deleteVideoGame(UUID id) throws ValidationException {
-        if(videoGameRepository.existsById(id)) {
+        if(!videoGameRepository.existsById(id)) {
             throw new ValidationException("Cannot delete.Video Game with ID" + id + "not found.");
         }
         videoGameRepository.deleteById(id);
     }
 
+    public List<VideoGame> getFilteredVideoGames(String title, String developer, Double maxPrice, String sortBy, String sortDir) {
+
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+
+        String processedTitle = (title == null || title.trim().isEmpty()) ? null : "%" + title.toLowerCase() + "%";
+
+        return videoGameRepository.searchAndFilterGames(processedTitle, developer, maxPrice, sort);
+    }
 }
