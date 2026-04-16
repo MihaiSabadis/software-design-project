@@ -21,16 +21,24 @@ export const routes: Routes = [
       ),
   },
   {
-    path:'player',
+    path: 'player',
     canActivate: [authGuard],
-    loadComponent: () =>
-      import ('./features/player/player').then((m) => m.Player),
+    loadComponent: () => import('./features/player/player').then((m) => m.Player),
   },
   {
-    path:'videogames',
+    path: 'games',
     canActivate: [authGuard],
     loadComponent: () =>
-      import ('./features/video-game-list/video-game-list-page.component').then((m) => m.VideoGameListPageComponent),
+      import('./features/video-game-list/video-game-list-page.component').then(
+        (m) => m.VideoGameListPageComponent,
+      ),
+  },
+  {
+    path: 'games/:id',
+    loadComponent: () =>
+      import('./features/video-game-details/video-game-details-page.component').then(
+        (m) => m.VideoGameDetailsPageComponent,
+      ),
   },
   {
     path: 'error',

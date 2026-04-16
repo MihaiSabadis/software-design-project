@@ -1,10 +1,7 @@
 package com.andrei.demo.service;
 
 import com.andrei.demo.config.ValidationException;
-import com.andrei.demo.model.Person;
-import com.andrei.demo.model.Review;
-import com.andrei.demo.model.ReviewCreateDTO;
-import com.andrei.demo.model.VideoGame;
+import com.andrei.demo.model.*;
 import com.andrei.demo.repository.ReviewRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -86,5 +83,25 @@ public class ReviewService {
         }
 
         return reviewRepository.save(existingReview);
+    }
+
+    // UPDATE THIS METHOD to return the new DTO:
+    public List<ReviewResponseDTO> getReviewsForGame(UUID gameId) {
+        List<Review> reviews = reviewRepository.findByGameId(gameId);
+
+        // Translate each Review entity into a DTO
+        return reviews.stream().map(review -> {
+            ReviewResponseDTO dto = new ReviewResponseDTO();
+            dto.setId(review.getId());
+            dto.setScore(review.getScore());
+            dto.setComment(review.getComment());
+            dto.setGameId(review.getGame().getId());
+
+            // Extract the hidden Person data safely!
+            dto.setAuthorId(review.getAuthor().getId());
+            dto.setAuthorName(review.getAuthor().getName());
+
+            return dto;
+        }).toList();
     }
 }

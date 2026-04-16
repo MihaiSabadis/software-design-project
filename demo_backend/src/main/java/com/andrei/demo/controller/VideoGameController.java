@@ -43,7 +43,7 @@ public class VideoGameController {
         return videoGameService.getVideoGameById(uuid);
     }
 
-    @GetMapping("/{title}")
+    @GetMapping("/title/{title}")
     public VideoGame getVideoGameByTitle(@PathVariable String title) {
         return videoGameService.getVideoGameByTitle(title);
     }

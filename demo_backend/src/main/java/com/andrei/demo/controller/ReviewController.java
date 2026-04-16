@@ -3,6 +3,7 @@ package com.andrei.demo.controller;
 import com.andrei.demo.config.ValidationException;
 import com.andrei.demo.model.Review;
 import com.andrei.demo.model.ReviewCreateDTO;
+import com.andrei.demo.model.ReviewResponseDTO;
 import com.andrei.demo.service.PersonService;
 import com.andrei.demo.service.ReviewService;
 import jakarta.validation.Valid;
@@ -55,4 +56,10 @@ public class ReviewController {
     public void deleteReview(@PathVariable UUID uuid) throws ValidationException {
         reviewService.deleteReview(uuid);
     }
+
+    @GetMapping("/game/{gameId}")
+    public List<ReviewResponseDTO> getReviewsForGame(@PathVariable UUID gameId) {
+        return reviewService.getReviewsForGame(gameId);
+    }
+
 }

@@ -29,6 +29,10 @@ export class VideoGameService {
     return this.http.get<VideoGame[]>(this.apiUrl, { params });
   }
 
+  getVideoGameById(id: string): Observable<VideoGame>{
+    return this.http.get<VideoGame>(`${this.apiUrl}/${id}`);
+  }
+
   deleteVideoGame(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
