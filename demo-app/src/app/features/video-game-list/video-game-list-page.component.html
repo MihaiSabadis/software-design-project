@@ -1,7 +1,9 @@
 <div class="games-container">
   <header>
     <h1>Video Games Store</h1>
-    <button class="btn-primary" (click)="openDialog()">+ Add New Game</button>
+    @if (loginStore.role() === 'ADMIN') {
+      <button class="btn-primary" (click)="openDialog()">+ Add New Game</button>
+    }
   </header>
 
   <section class="filters-section">

@@ -1,26 +1,29 @@
-import { Component, Input, EventEmitter, Output } from '@angular/core';
+import { Component, Input, EventEmitter, Output, inject } from '@angular/core';
 import { VideoGame } from '../../models/video-game.model';
+import {RouterLink} from "@angular/router";
+import {LoginStore} from "../../features/login/login.store";
 
 @Component({
   selector: 'app-video-game-card',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './video-game-card.component.html',
   styleUrl: './video-game-card.component.scss',
 })
 export class VideoGameCardComponent {
   @Input({ required: true }) game!: VideoGame;
 
+  readonly loginStore = inject(LoginStore);
+
   @Output() deleteClick = new EventEmitter<string>();
   @Output() editClick = new EventEmitter<VideoGame>();
 
-  onDelete(): void{
-    if(this.game.id){
+  onDelete(): void {
+    if (this.game.id) {
       this.deleteClick.emit(this.game.id);
     }
   }
 
-  onEdit():void{
+  onEdit(): void {
     this.editClick.emit(this.game);
   }
-
 }

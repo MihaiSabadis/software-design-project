@@ -6,9 +6,10 @@
 
   <div class="card-actions">
     <p class="price">${{ game.price }}</p>
-    <button class="btn-primary" (click)="onEdit()">Edit</button>
-    <button class="btn-danger" (click) = "onDelete()">
-      Delete
-    </button>
+    <button class="btn-details" [routerLink]="['/games', game.id]"> View Details </button>
+    @if (loginStore.role() === 'ADMIN') {
+      <button class="btn-primary" (click)="onEdit()">Edit</button>
+      <button class="btn-danger" (click) = "onDelete()"> Delete </button>
+    }
   </div>
 </div>

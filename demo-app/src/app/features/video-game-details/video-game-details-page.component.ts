@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit,ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -16,10 +16,14 @@ import { ReviewCreateDTO } from '../../models/review-create.dto';
   styleUrls: ['./video-game-details-page.component.scss'],
 })
 export class VideoGameDetailsPageComponent implements OnInit {
+
+  private readonly cdr = inject(ChangeDetectorRef);
+
   // Services
   private readonly route = inject(ActivatedRoute);
   private readonly videoGameService = inject(VideoGameService);
   private readonly reviewService = inject(ReviewService);
+
 
   // State Variables
   gameId: string | null = null;
@@ -35,19 +39,30 @@ export class VideoGameDetailsPageComponent implements OnInit {
   newReview: ReviewCreateDTO = { authorId: this.currentUser, score: 5, comment: '' };
 
   ngOnInit(): void {
-    // 1. Read the ID from the URL (e.g., /games/123)
-    this.gameId = this.route.snapshot.paramMap.get('id');
+    // We use .subscribe() to constantly listen to the URL for changes
+    this.route.paramMap.subscribe((params) => {
+      this.gameId = params.get('id');
 
-    if (this.gameId) {
-      this.loadGame();
-      this.loadReviews();
-    }
+      // Clear out the old data so the screen doesn't flicker
+      this.game = null;
+      this.reviews = [];
+      this.userReview = undefined;
+
+      // Fetch the new game and reviews
+      if (this.gameId) {
+        this.loadGame();
+        this.loadReviews();
+      }
+    });
   }
 
   loadGame(): void {
     this.videoGameService.getVideoGameById(this.gameId!).subscribe({
-      next: (data) => (this.game = data),
-      error: (err) => console.error('Failed to load game', err),
+      next: (data) => {
+        this.game = data;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error(err),
     });
   }
 
@@ -56,8 +71,9 @@ export class VideoGameDetailsPageComponent implements OnInit {
       next: (data) => {
         this.reviews = data;
         this.userReview = this.reviews.find((r) => r.authorId === this.currentUser);
+        this.cdr.detectChanges();
       },
-      error: (err) => console.error('Failed to load reviews', err),
+      error: (err) => console.error(err),
     });
   }
 
@@ -70,7 +86,7 @@ export class VideoGameDetailsPageComponent implements OnInit {
           this.loadReviews(); // Refresh the list, which will hide the form automatically!
           this.newReview.comment = ''; // Clear the box
         },
-        error: (err) => alert('Failed to post review. You might have already reviewed this!'),
+        error: () => alert('Failed to post review. You might have already reviewed this!'),
       });
     }
   }
@@ -82,7 +98,7 @@ export class VideoGameDetailsPageComponent implements OnInit {
           this.userReview = undefined;
           this.loadReviews();
         },
-        error: (err) => console.error('Failed to delete', err),
+        error: (err) => console.error(err),
       });
     }
   }
@@ -112,7 +128,7 @@ export class VideoGameDetailsPageComponent implements OnInit {
           this.isEditing = false; // Turn off edit mode
           this.loadReviews(); // Refresh the page to see the new text!
         },
-        error: (err) => console.error('Failed to update review', err),
+        error: (err) => console.error(err),
       });
     }
   }

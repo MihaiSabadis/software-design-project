@@ -6,6 +6,7 @@ import { VideoGame } from '../../models/video-game.model';
 import { VideoGameCardComponent } from '../../components/video-game-card/video-game-card.component';
 import { VideoGameCreateDTO } from "../../models/video-game-create.dto";
 import { VideoGameFormDialogComponent } from "../../components/video-game-form-dialog/video-game-form-dialog.component";
+import {LoginStore} from "../login/login.store";
 
 @Component({
   selector: 'app-video-game-list-page',
@@ -30,6 +31,7 @@ export class VideoGameListPageComponent implements OnInit {
 
   private readonly videoGameService = inject(VideoGameService);
   private readonly cdr = inject(ChangeDetectorRef);
+  readonly loginStore = inject(LoginStore);
 
   ngOnInit(): void {
     // Load all games when the page first opens
@@ -58,7 +60,7 @@ export class VideoGameListPageComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Error fetching filtered games:', err);
+        console.error(err);
       },
     });
   }
@@ -83,7 +85,7 @@ export class VideoGameListPageComponent implements OnInit {
           this.cdr.detectChanges();
         },
         error: (err) => {
-          console.error('Failed to update', err);
+          console.error(err);
           alert('Failed to update game.');
         },
       });
@@ -95,7 +97,7 @@ export class VideoGameListPageComponent implements OnInit {
           this.loadGames();
         },
         error: (err) => {
-          console.error('Failed to create game', err);
+          console.error(err);
           alert('Failed to save the game to the database');
         },
       });
@@ -112,7 +114,7 @@ export class VideoGameListPageComponent implements OnInit {
           this.loadGames();
         },
         error: (err) => {
-          console.error('Failed to delete game', err);
+          console.error(err);
           alert('Could not delete the game. It might be tied to existing reviews ?');
         },
       });
