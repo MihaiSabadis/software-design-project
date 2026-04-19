@@ -3,6 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { VideoGame } from '../models/video-game.model';
 import {VideoGameCreateDTO} from "../models/video-game-create.dto";
+import { Person } from '../models/person.model';
 
 @Injectable({ providedIn: 'root' })
 export class VideoGameService {
@@ -39,5 +40,9 @@ export class VideoGameService {
 
   editVideoGame(id: string, game: VideoGameCreateDTO): Observable<VideoGame> {
     return this.http.put<VideoGame>(`${this.apiUrl}/${id}`, game);
+  }
+
+  addGameToUser(personId: string, gameId: string): Observable<Person> {
+    return this.http.post<Person>(`http://localhost:8080/person/${personId}/games/${gameId}`, {});
   }
 }

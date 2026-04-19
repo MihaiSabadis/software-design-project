@@ -33,6 +33,11 @@ public class ReviewService {
         Person author = personService.getPersonById(reviewDTO.getAuthorId());
         VideoGame game = videoGameService.getVideoGameById(reviewDTO.getGameId());
 
+        //if the game is in the personal library
+        if(!author.getOwnedGames().contains(game)){
+            throw new ValidationException("You can only review games that are in your library!");
+        }
+
         // edge case: Did this person already review this game?
         if (reviewRepository.existsByAuthorIdAndGameId(author.getId(), game.getId())) {
             throw new ValidationException("User has already reviewed this game!");

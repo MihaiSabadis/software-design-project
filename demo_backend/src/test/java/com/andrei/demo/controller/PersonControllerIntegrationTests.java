@@ -71,6 +71,8 @@ public class PersonControllerIntegrationTests {
     void testAddPerson_ValidPayload() throws Exception {
         String validPersonJson = loadFixture("valid_person.json");
 
+        long initialCount = personRepository.count();//to test if the data actually made it to the database
+
         mockMvc.perform(post("/person")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validPersonJson))
@@ -80,6 +82,9 @@ public class PersonControllerIntegrationTests {
                 .andExpect(jsonPath("$.password").value("Securepass123!@#"))
                 .andExpect(jsonPath("$.age").value(28))
                 .andExpect(jsonPath("$.email").value("alice.smith@example.com"));
+
+
+        org.junit.jupiter.api.Assertions.assertEquals(initialCount + 1, personRepository.count());
     }
 
     @Test
