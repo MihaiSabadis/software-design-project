@@ -33,8 +33,12 @@ public class VideoGameService {
     }
 
     public VideoGame addVideoGame(VideoGameCreateDTO videoGameDTO){
-        VideoGame videoGame = new VideoGame();
 
+        if (videoGameRepository.existsByTitle(videoGameDTO.getTitle())) {
+            throw new ValidationException("A video game with this title already exists!");
+        }
+
+        VideoGame videoGame = new VideoGame();
         videoGame.setTitle(videoGameDTO.getTitle());
         videoGame.setDeveloper(videoGameDTO.getDeveloper());
         videoGame.setPrice(videoGameDTO.getPrice());

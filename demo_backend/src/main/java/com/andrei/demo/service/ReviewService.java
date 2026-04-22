@@ -3,6 +3,7 @@ package com.andrei.demo.service;
 import com.andrei.demo.config.ValidationException;
 import com.andrei.demo.model.*;
 import com.andrei.demo.repository.ReviewRepository;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +29,7 @@ public class ReviewService {
                 .orElseThrow(() -> new IllegalStateException("Review with ID " + id + " not found."));
     }
 
+    @Transactional
     public Review addReview(ReviewCreateDTO reviewDTO) throws ValidationException {
 
         Person author = personService.getPersonById(reviewDTO.getAuthorId());

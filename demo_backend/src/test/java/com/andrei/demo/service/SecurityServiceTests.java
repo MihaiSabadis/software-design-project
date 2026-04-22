@@ -2,6 +2,7 @@ package com.andrei.demo.service;
 
 import com.andrei.demo.model.LoginResponse;
 import com.andrei.demo.model.Person;
+import com.andrei.demo.model.Role;
 import com.andrei.demo.repository.PersonRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,9 +41,11 @@ class SecurityServiceTests {
     void testLoginSuccess() {
         String email = "john@example.com";
         String password = "password";
+        String role = "ADMIN";
         Person person = new Person();
         person.setEmail(email);
         person.setPassword(password);
+        person.setRole(Role.valueOf(role));
 
         when(personRepository.findByEmail(email)).thenReturn(Optional.of(person));
         LoginResponse result = securityService.login(email, password);
@@ -57,6 +60,7 @@ class SecurityServiceTests {
         String email = "john@example.com";
         String password = "password";
         Person person = new Person();
+
         person.setEmail(email);
         person.setPassword("wrongpassword");
 

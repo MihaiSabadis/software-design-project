@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { VideoGameService } from '../../services/video-game.service';
 import { ReviewService } from '../../services/review.service';
+import { PersonService} from '../../services/person.service';
 import { VideoGame } from '../../models/video-game.model';
 import { Review } from '../../models/review.model';
 import { ReviewCreateDTO } from '../../models/review-create.dto';
@@ -11,7 +12,7 @@ import { ReviewCreateDTO } from '../../models/review-create.dto';
 @Component({
   selector: 'app-video-game-details-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink], // Notice RouterLink for the 'Back' button!
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './video-game-details-page.component.html',
   styleUrls: ['./video-game-details-page.component.scss'],
 })
@@ -23,6 +24,7 @@ export class VideoGameDetailsPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly videoGameService = inject(VideoGameService);
   private readonly reviewService = inject(ReviewService);
+  private readonly personService = inject(PersonService);
 
 
   // State Variables
@@ -30,25 +32,24 @@ export class VideoGameDetailsPageComponent implements OnInit {
   game: VideoGame | null = null;
   reviews: Review[] = [];
   isEditing: boolean = false;
+  isOwned: boolean = false;
 
-  // Simulated Authentication (Change this name to test different users!)
-  currentUser: string = '851fc701-d89e-4c33-802f-eea95a0cc929';
+  // change to test for different users(lack of JWT)
+  currentUser: string = '51c02ba8-6b8f-4dd7-84ae-b8188ab5589c';
 
   // Smart Area Variables
   userReview: Review | undefined;
   newReview: ReviewCreateDTO = { authorId: this.currentUser, score: 5, comment: '' };
 
   ngOnInit(): void {
-    // We use .subscribe() to constantly listen to the URL for changes
     this.route.paramMap.subscribe((params) => {
       this.gameId = params.get('id');
 
-      // Clear out the old data so the screen doesn't flicker
+
       this.game = null;
       this.reviews = [];
       this.userReview = undefined;
 
-      // Fetch the new game and reviews
       if (this.gameId) {
         this.loadGame();
         this.loadReviews();
@@ -60,6 +61,16 @@ export class VideoGameDetailsPageComponent implements OnInit {
     this.videoGameService.getVideoGameById(this.gameId!).subscribe({
       next: (data) => {
         this.game = data;
+
+        this.personService.getById(this.currentUser).subscribe({
+          next: (person) => {
+
+            this.isOwned = !!person.ownedGames?.some((g) => g.id === this.gameId);
+            this.cdr.detectChanges();
+          },
+          error: (err) => console.error('Could not fetch user profile', err),
+        });
+
         this.cdr.detectChanges();
       },
       error: (err) => console.error(err),
@@ -83,8 +94,8 @@ export class VideoGameDetailsPageComponent implements OnInit {
       this.newReview.authorId = this.currentUser;
       this.reviewService.addReview(this.gameId!, this.newReview).subscribe({
         next: () => {
-          this.loadReviews(); // Refresh the list, which will hide the form automatically!
-          this.newReview.comment = ''; // Clear the box
+          this.loadReviews();
+          this.newReview.comment = '';
         },
         error: () => alert('Failed to post review. You might have already reviewed this!'),
       });
@@ -116,20 +127,30 @@ export class VideoGameDetailsPageComponent implements OnInit {
 
   cancelEditing(): void {
     this.isEditing = false;
-    // Wipe the form clean just in case
     this.newReview = { authorId: this.currentUser, score: 5, comment: '' };
   }
 
   submitEdit(): void {
     if (this.newReview.comment.trim() && this.userReview?.id) {
-      // Send the updated suitcase to the backend!
       this.reviewService.updateReview(this.userReview.id, this.newReview).subscribe({
         next: () => {
-          this.isEditing = false; // Turn off edit mode
-          this.loadReviews(); // Refresh the page to see the new text!
+          this.isEditing = false;
+          this.loadReviews();
         },
         error: (err) => console.error(err),
       });
     }
   }
+
+  addToLibrary(): void {
+    if (this.gameId) {
+      this.personService.addGameToLibrary(this.currentUser, this.gameId).subscribe({
+        next: () => {
+          this.isOwned = true;
+          this.cdr.detectChanges();
+        },
+        error: (err) => alert('Failed to add game to library.')
+      });
+    }
+}
 }

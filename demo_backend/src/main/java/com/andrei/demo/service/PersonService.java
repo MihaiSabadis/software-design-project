@@ -6,6 +6,7 @@ import com.andrei.demo.model.PersonCreateDTO;
 import com.andrei.demo.model.VideoGame;
 import com.andrei.demo.repository.PersonRepository;
 import com.andrei.demo.repository.VideoGameRepository;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -63,21 +64,6 @@ public class PersonService {
         return personRepository.save(existingPerson);
     }
 
-    public Person updatePerson2(UUID uuid, Person person) throws ValidationException{
-        return personRepository
-                        .findById(uuid)
-                        .map(existingPerson -> {
-                            existingPerson.setName(person.getName());
-                            existingPerson.setAge(person.getAge());
-                            existingPerson.setEmail(person.getEmail());
-                            existingPerson.setPassword(person.getPassword());
-                            return personRepository.save(existingPerson);
-                        })
-                        .orElseThrow(
-                                () -> new ValidationException("Person with id " + uuid + " not found")
-                        );
-    }
-
     public void deletePerson(UUID uuid) {
         personRepository.deleteById(uuid);
     }
@@ -92,6 +78,7 @@ public class PersonService {
                 () -> new IllegalStateException("Person with id " + uuid + " not found"));
     }
 
+    @Transactional
     public Person addGameToLibrary(UUID personId, UUID gameId) throws ValidationException {
         Person person = personRepository.findById(personId)
                 .orElseThrow(() -> new ValidationException("Person with ID " + personId + " not found"));

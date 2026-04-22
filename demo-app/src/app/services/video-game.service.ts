@@ -30,7 +30,7 @@ export class VideoGameService {
     return this.http.get<VideoGame[]>(this.apiUrl, { params });
   }
 
-  getVideoGameById(id: string): Observable<VideoGame>{
+  getVideoGameById(id: string): Observable<VideoGame> {
     return this.http.get<VideoGame>(`${this.apiUrl}/${id}`);
   }
 
@@ -40,9 +40,5 @@ export class VideoGameService {
 
   editVideoGame(id: string, game: VideoGameCreateDTO): Observable<VideoGame> {
     return this.http.put<VideoGame>(`${this.apiUrl}/${id}`, game);
-  }
-
-  addGameToUser(personId: string, gameId: string): Observable<Person> {
-    return this.http.post<Person>(`http://localhost:8080/person/${personId}/games/${gameId}`, {});
   }
 }

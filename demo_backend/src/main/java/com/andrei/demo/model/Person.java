@@ -3,6 +3,7 @@ package com.andrei.demo.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,8 +36,8 @@ public class Person {
             joinColumns = @JoinColumn(name="person_id"),
             inverseJoinColumns = @JoinColumn(name = "game_id")
     )
-    private List<VideoGame> ownedGames;
+    private List<VideoGame> ownedGames = new ArrayList<>();
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Review> writtenReviews;
+    private List<Review> writtenReviews =  new ArrayList<>();
 }

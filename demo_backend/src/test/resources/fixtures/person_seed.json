@@ -4,13 +4,15 @@
     "name": "John Doe",
     "password": "Password_john123!@#",
     "age": 30,
-    "email": "john.doe@example.com"
+    "email": "john.doe@example.com",
+    "role": "ADMIN"
   },
   {
     "id": null,
     "name": "Jane Doe",
     "password": "Password_jane123!@#",
     "age": 25,
-    "email": "jane.doe@example.com"
+    "email": "jane.doe@example.com",
+    "role": "PLAYER"
   }
 ]

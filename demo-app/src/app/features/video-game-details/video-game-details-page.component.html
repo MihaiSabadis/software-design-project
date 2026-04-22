@@ -8,11 +8,27 @@
       <p class="game-meta">
         Developer: {{ game.developer }} | Price: ${{ game.price }}
       </p>
+
+      @if (isOwned) {
+        <button class="btn-submit" disabled style="background-color: #4caf50;">✓ Owned</button>
+      } @else {
+        <button class="btn-submit" (click)="addToLibrary()">Add to Library</button>
+      }
+
     </section>
   }
 
   <section class="smart-area">
     <h2>My Review</h2>
+
+    @if (isOwned) {
+      <section class="smart-area">
+      </section>
+    } @else {
+      <section class="smart-area" style="text-align: center; padding: 2rem;">
+        <h3>You must own this game to leave a review.</h3>
+      </section>
+    }
 
     @if (userReview && !isEditing) {
       <div class="review-card owner-review">

@@ -9,6 +9,10 @@ const API_URL = 'http://localhost:8080/person';
 export class PersonService {
   private readonly http = inject(HttpClient);
 
+  getById(id: string): Observable<Person>{
+    return this.http.get<Person>(`${API_URL}/${id}`);
+  }
+
   getAll(): Observable<Person[]> {
     return this.http.get<Person[]>(API_URL);
   }
@@ -24,5 +28,11 @@ export class PersonService {
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${API_URL}/${id}`);
   }
+
+  addGameToLibrary(personId: string, gameId: string): Observable<Person> {
+    return this.http.post<Person>(`${API_URL}/${personId}/games/${gameId}`, {});
+  }
+
+
 }
 

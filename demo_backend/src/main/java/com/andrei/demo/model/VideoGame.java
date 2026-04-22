@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,18 +18,18 @@ public class VideoGame {
     private UUID id;
 
     @Column(name = "title", nullable = false, unique = true)
-    private String title;
+    private String title="";
 
-    @Column(name = "developer",  nullable = false, unique = true)
-    private String developer;
+    @Column(name = "developer",  nullable = false)
+    private String developer="";
 
     @Column(name = "price", nullable = false)
-    private Double price;
+    private Double price=0.0;
 
     @ManyToMany(mappedBy = "ownedGames")
     @JsonIgnore
-    private List<Person> owners;
+    private List<Person> owners = new ArrayList<>();
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Review> reviews;
+    private List<Review> reviews = new ArrayList<>();
 }
