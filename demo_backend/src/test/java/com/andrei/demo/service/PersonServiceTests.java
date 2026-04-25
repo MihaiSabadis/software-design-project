@@ -1,10 +1,10 @@
 package com.andrei.demo.service;
 
 import com.andrei.demo.config.ValidationException;
-import com.andrei.demo.model.LoginResponse;
 import com.andrei.demo.model.Person;
 import com.andrei.demo.model.PersonCreateDTO;
 import com.andrei.demo.repository.PersonRepository;
+import com.andrei.demo.util.PasswordUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +18,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
 
 class PersonServiceTests {
 
@@ -25,7 +26,10 @@ class PersonServiceTests {
     private PersonRepository personRepository;
 
     @Mock
-    private com.andrei.demo.repository.VideoGameRepository videoGameRepository; // ADD THIS
+    private com.andrei.demo.repository.VideoGameRepository videoGameRepository;
+
+    @Mock
+    private PasswordUtil passwordUtil;
 
     @InjectMocks
     private PersonService personService;
@@ -66,20 +70,18 @@ class PersonServiceTests {
         personDTO.setAge(30);
         personDTO.setEmail("john@example.com");
 
-        Person savedPerson = new Person();
-        savedPerson.setId(UUID.randomUUID());
-        savedPerson.setName("John");
-        savedPerson.setAge(30);
-        savedPerson.setEmail("john@example.com");
-        savedPerson.setPassword("password");
+        when(passwordUtil.hashPassword("password")).thenReturn("hashed-password");
+        when(personRepository.save(any(Person.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // when:
-        when(personRepository.save(any(Person.class))).thenReturn(savedPerson);
         Person result = personService.addPerson(personDTO);
 
         // then:
-        assertEquals(savedPerson, result);
-        assertNotNull(result.getId());
+        assertEquals("John", result.getName());
+        assertEquals(30, result.getAge());
+        assertEquals("john@example.com", result.getEmail());
+        assertEquals("hashed-password", result.getPassword());
+        verify(passwordUtil, times(1)).hashPassword("password");
         verify(personRepository, times(1)).save(any(Person.class));
     }
 
@@ -87,29 +89,36 @@ class PersonServiceTests {
     void testUpdatePerson() throws ValidationException {
         // given:
         UUID uuid = UUID.randomUUID();
-        Person person = new Person();
-        person.setId(uuid);
-        person.setName("John");
-        person.setAge(30);
-        person.setEmail("john@example.com");
-        person.setPassword("password");
+        Person existingPerson = new Person();
+        existingPerson.setId(uuid);
+        existingPerson.setName("John");
+        existingPerson.setAge(30);
+        existingPerson.setEmail("john@example.com");
+        existingPerson.setPassword("old-hash");
 
-        Person updatedPerson = new Person();
-        updatedPerson.setId(uuid);
-        updatedPerson.setName("Jane");
-        updatedPerson.setAge(25);
-        updatedPerson.setEmail("jane@example.com");
-        updatedPerson.setPassword("newpassword");
+        Person updatePayload = new Person();
+        updatePayload.setId(uuid);
+        updatePayload.setName("Jane");
+        updatePayload.setAge(25);
+        updatePayload.setEmail("jane@example.com");
+        updatePayload.setPassword("newpassword");
+
+        when(personRepository.findById(uuid)).thenReturn(Optional.of(existingPerson));
+        when(passwordUtil.hashPassword("newpassword")).thenReturn("new-hash");
+        when(personRepository.save(any(Person.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // when:
-        when(personRepository.findById(uuid)).thenReturn(Optional.of(person));
-        when(personRepository.save(any())).thenReturn(updatedPerson);
-        Person result = personService.updatePerson(uuid, updatedPerson);
+        Person result = personService.updatePerson(uuid, updatePayload);
 
         // then:
         assertEquals("Jane", result.getName());
+        assertEquals(25, result.getAge());
+        assertEquals("jane@example.com", result.getEmail());
+        assertEquals("new-hash", result.getPassword());
+
         verify(personRepository, times(1)).findById(uuid);
-        verify(personRepository, times(1)).save(updatedPerson);
+        verify(passwordUtil, times(1)).hashPassword("newpassword");
+        verify(personRepository, times(1)).save(any(Person.class));
     }
 
     @Test
@@ -124,6 +133,8 @@ class PersonServiceTests {
         // then:
         assertThrows(ValidationException.class, () -> personService.updatePerson(uuid, person));
         verify(personRepository, times(1)).findById(uuid);
+        verify(personRepository, never()).save(any(Person.class));
+        verifyNoInteractions(passwordUtil);
     }
 
     @Test
