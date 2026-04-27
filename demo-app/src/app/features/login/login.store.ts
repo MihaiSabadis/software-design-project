@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { catchError, finalize, Observable, of, tap } from 'rxjs';
-import { LoginRequest, LoginResponse, LoginService } from '../../services/login.service';
+import { LoginRequest, LoginResponse, AuthService } from '../../services/auth.service';
 
 interface AuthSnapshot {
   role: string | null;
@@ -12,7 +12,7 @@ const STORAGE_KEY = 'demo-app-auth';
 
 @Injectable({ providedIn: 'root' })
 export class LoginStore {
-  private readonly loginService = inject(LoginService);
+  private readonly loginService = inject(AuthService);
 
   readonly isSubmitting = signal(false);
   readonly errorMessage = signal<string | null>(null);

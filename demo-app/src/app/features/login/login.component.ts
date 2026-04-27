@@ -5,7 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { Router } from '@angular/router';
+import { Router, RouterLink} from '@angular/router';
 import { LoginStore } from './login.store';
 
 @Component({
@@ -16,6 +16,7 @@ import { LoginStore } from './login.store';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    RouterLink,
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
@@ -27,7 +28,6 @@ export class LoginComponent {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
-
   protected readonly isSubmitting = this.loginStore.isSubmitting;
   protected readonly errorMessage = this.loginStore.errorMessage;
 
@@ -36,7 +36,7 @@ export class LoginComponent {
     password: ['', [Validators.required]],
   });
 
-  protected submit(): void {
+  protected onSubmit(): void {
     if (this.loginForm.invalid || this.isSubmitting()) {
       this.loginForm.markAllAsTouched();
       return;
@@ -50,17 +50,12 @@ export class LoginComponent {
         if (!response.success) {
           return;
         } else {
-          // 1. ADAUGĂ ASTA PENTRU DEBUG:
-          console.log('Răspuns backend la login:', response);
-
           if (response.role === 'ADMIN') {
             void this.router.navigate(['/people']);
           } else if (response.role === 'PLAYER') {
             void this.router.navigate(['/player']);
           }
         }
-
-        //void this.router.navigate(['/people']);
       });
   }
 }

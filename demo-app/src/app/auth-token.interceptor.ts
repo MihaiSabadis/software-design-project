@@ -6,7 +6,10 @@ export const authTokenInterceptor: HttpInterceptorFn = (request, next) => {
   const loginStore = inject(LoginStore);
   const token = loginStore.token();
 
-  if (!token || request.url.endsWith('/login')) {
+  const isLogin = request.url.endsWith('/login');
+  const isRegistration = request.url.endsWith('/person') && request.method === 'POST';
+
+  if (!token || isLogin || isRegistration) {
     return next(request);
   }
 

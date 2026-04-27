@@ -3,7 +3,7 @@
     <h1 id="login-title">Sign in</h1>
     <p class="subtitle">Enter your email and password to continue.</p>
 
-    <form [formGroup]="loginForm" (ngSubmit)="submit()" novalidate>
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Email</mat-label>
         <input
@@ -45,6 +45,10 @@
           Sign in
         }
       </button>
+
+      <div class="register-link" style="text-align: center; margin-top: 1rem;">
+        <p>Don't have an account? <a routerLink="/register">Create now</a></p>
+      </div>
     </form>
   </mat-card>
 </main>

@@ -2,7 +2,8 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-const API_URL = 'http://localhost:8080/login';
+const API_URL_LOG = 'http://localhost:8080/login';
+const API_URL_REG = 'http://localhost:8080/person';
 
 export interface LoginRequest {
   email: string;
@@ -17,10 +18,14 @@ export interface LoginResponse {
 }
 
 @Injectable({ providedIn: 'root' })
-export class LoginService {
+export class AuthService {
   private readonly http = inject(HttpClient);
 
   login(request: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(API_URL, request);
+    return this.http.post<LoginResponse>(API_URL_LOG, request);
+  }
+
+  register(personData: any): Observable<any>{
+    return this.http.post(API_URL_REG, personData, {responseType: 'text'});
   }
 }

@@ -27,8 +27,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         String method = request.getMethod();
 
+        boolean isLogin = "/login".equals(path);
+        boolean isRegistration = "/person".equals(path) && "POST".equalsIgnoreCase(method);
+        boolean isPreflight = "OPTIONS".equalsIgnoreCase(method);
+
         // Allow OPTIONS requests (for CORS preflight) and /login endpoint
-        if ("/login".equals(path) || "OPTIONS".equalsIgnoreCase(method)) {
+        if (isLogin || isRegistration || isPreflight) {
             log.info("Skipping JWT filter for path: {} and method: {}", path, method);
             filterChain.doFilter(request, response);
             return;
