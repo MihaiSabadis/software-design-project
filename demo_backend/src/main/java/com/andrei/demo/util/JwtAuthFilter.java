@@ -31,8 +31,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         boolean isRegistration = "/person".equals(path) && "POST".equalsIgnoreCase(method);
         boolean isPreflight = "OPTIONS".equalsIgnoreCase(method);
 
+        boolean isForgotPassword = path.startsWith("/person/forgot-password");
+        boolean isResetPassword = path.startsWith("/person/reset-password");
+
         // Allow OPTIONS requests (for CORS preflight) and /login endpoint
-        if (isLogin || isRegistration || isPreflight) {
+        if (isLogin || isRegistration || isPreflight || isForgotPassword || isResetPassword) {
             log.info("Skipping JWT filter for path: {} and method: {}", path, method);
             filterChain.doFilter(request, response);
             return;

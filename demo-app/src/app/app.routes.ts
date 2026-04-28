@@ -15,7 +15,8 @@ export const routes: Routes = [
   {
     path: 'register',
     canActivate: [guestGuard],
-    loadComponent: () => import('./features/register/register.component').then((m) => m.RegisterComponent),
+    loadComponent: () =>
+      import('./features/register/register.component').then((m) => m.RegisterComponent),
   },
   {
     path: 'people',
@@ -43,6 +44,14 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/video-game-details/video-game-details-page.component').then(
         (m) => m.VideoGameDetailsPageComponent,
+      ),
+  },
+  {
+    path: 'forgot-password',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./features/password-reset/password-reset.component').then(
+        (m) => m.PasswordResetComponent,
       ),
   },
   {

@@ -22,6 +22,8 @@ public class PersonService {
     private final VideoGameRepository videoGameRepository;
     private final PasswordUtil passwordUtil;
 
+    private final EmailService emailService;
+
     public List<Person> getPeople() {
         return personRepository.findAll();
     }
@@ -94,5 +96,40 @@ public class PersonService {
 
         person.getOwnedGames().add(game);
         return personRepository.save(person);
+    }
+
+
+    public void forgotPassword(String email) throws ValidationException {
+        Person person = personRepository.findByEmail(email)
+                .orElseThrow(() -> new ValidationException("No account found with that email."));
+
+        String code = String.format("%06d", new java.util.Random().nextInt(999999));
+
+        person.setResetCode(code);
+        person.setResetCodeExpiration(java.time.LocalDateTime.now().plusMinutes(10));
+        personRepository.save(person);
+
+        emailService.sendPasswordResetEmail(person.getEmail(), code);
+    }
+
+    public void resetPassword(String email, String code, String newPassword) throws ValidationException {
+        Person person = personRepository.findByEmail(email)
+                .orElseThrow(() -> new ValidationException("No account found with that email."));
+
+        if (person.getResetCode() == null || !person.getResetCode().equals(code)) {
+            throw new ValidationException("Invalid reset code.");
+        }
+
+        if (person.getResetCodeExpiration().isBefore(java.time.LocalDateTime.now())) {
+            throw new ValidationException("Reset code has expired. Please request a new one.");
+        }
+
+        person.setPassword(passwordUtil.hashPassword(newPassword));
+
+        person.setResetCode(null);
+        person.setResetCodeExpiration(null);
+        personRepository.save(person);
+
+        emailService.sendPasswordChangeConfirmation(person.getEmail());
     }
 }

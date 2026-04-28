@@ -70,3 +70,7 @@ GET http://localhost:8080/videogames?developer=Valve&maxPrice=15.00
 ### Test E: The "Empty Results" check (Should return an empty array [])
 ### Proves your database doesn't crash if no data matches the filters.
 GET http://localhost:8080/videogames?developer=Nintendo&maxPrice=5.00
+
+###
+
+POST http://localhost:8080/person/forgot-password?email=sabadis.m04@gmail.com

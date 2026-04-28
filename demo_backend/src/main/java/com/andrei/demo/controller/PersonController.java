@@ -1,9 +1,12 @@
 package com.andrei.demo.controller;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import com.andrei.demo.config.ValidationException;
 import com.andrei.demo.model.PersonCreateDTO;
 import com.andrei.demo.service.PersonService;
 import com.andrei.demo.model.Person;
+import com.andrei.demo.util.JwtUtil;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -18,44 +21,85 @@ import java.util.UUID;
 @AllArgsConstructor
 public class PersonController {
     private final PersonService personService;
+    private final JwtUtil jwtUtil;
 
     @GetMapping
-    public List<Person> getPeople() {
-        return personService.getPeople();
+    public ResponseEntity<?> getPeople(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        String role = jwtUtil.getRoleFromToken(token);
+
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Access Denied: Admin privileges required.");
+        }
+
+        List<Person> people = personService.getPeople();
+        return ResponseEntity.ok(people);
     }
 
     @GetMapping("{uuid}")
-    public Person getPersonById(@PathVariable UUID uuid) {
-        return personService.getPersonById(uuid);
+    public ResponseEntity<?> getPersonById(@PathVariable UUID uuid) {
+        return ResponseEntity.ok(personService.getPersonById(uuid));
     }
 
     @GetMapping("/email/{email}")
-    public Person getPersonByEmail(@PathVariable String email) {
-        return personService.getPersonByEmail(email);
+    public ResponseEntity<?> getPersonByEmail(@PathVariable String email) {
+        return ResponseEntity.ok(personService.getPersonByEmail(email));
     }
 
     @PostMapping
-    public Person addPerson(
+    public ResponseEntity<?> addPerson(
             @Valid @RequestBody PersonCreateDTO personDTO
     ) throws ValidationException {
-        return personService.addPerson(personDTO);
+        return ResponseEntity.ok(personService.addPerson(personDTO));
     }
 
     @PostMapping("/{personId}/games/{gameId}")
-    public Person addGameToLibrary(@PathVariable UUID personId, @PathVariable UUID gameId) throws ValidationException {
-        return personService.addGameToLibrary(personId, gameId);
+    public ResponseEntity<?> addGameToLibrary(@PathVariable UUID personId, @PathVariable UUID gameId) throws ValidationException {
+        return ResponseEntity.ok(personService.addGameToLibrary(personId, gameId));
     }
 
     @PutMapping("/{uuid}")
-    public Person updatePerson(@PathVariable UUID uuid,
+    public ResponseEntity<?> updatePerson(@PathVariable UUID uuid,
                                @RequestBody Person person)
             throws ValidationException {
-        return personService.updatePerson(uuid, person);
+        return ResponseEntity.ok(personService.updatePerson(uuid, person));
     }
 
     @DeleteMapping("/{uuid}")
-    public void deletePerson(@PathVariable UUID uuid) {
+    public ResponseEntity<?> deletePerson(@PathVariable UUID uuid,
+                                          @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+
+        if (!"ADMIN".equals(jwtUtil.getRoleFromToken(token))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Access Denied: Only Admins can delete users.");
+        }
+
         personService.deletePerson(uuid);
+        return ResponseEntity.ok("Person deleted successfully");
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestParam String email) {
+        try {
+            personService.forgotPassword(email);
+            return ResponseEntity.ok("If that email exists, a reset code was sent.");
+        } catch (ValidationException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestParam String email,
+                                           @RequestParam String code,
+                                           @RequestParam String newPassword) {
+        try {
+            personService.resetPassword(email, code, newPassword);
+            return ResponseEntity.ok("Password successfully reset.");
+        } catch (ValidationException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
 }

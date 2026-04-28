@@ -3,6 +3,7 @@ package com.andrei.demo.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -29,6 +30,12 @@ public class Person {
 
     @Column(name = "email", nullable = false, unique = true)
     private String email;
+
+    @Column(name = "reset_code")
+    private String resetCode;
+
+    @Column(name = "reset_code_expiration")
+    private LocalDateTime resetCodeExpiration;
 
     @ManyToMany
     @JoinTable(

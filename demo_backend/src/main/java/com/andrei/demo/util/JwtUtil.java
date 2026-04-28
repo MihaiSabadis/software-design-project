@@ -38,7 +38,7 @@ public class JwtUtil {
                 .issuedAt(getCurrentDate())
                 .claims(Map.of(
                         "userId", person.getId(),
-                        "role", "ADMIN"
+                        "role", person.getRole().name()
                 ))
                 // the token will be expired in 10 hours
                 .expiration(new Date(System.currentTimeMillis() + 1000* 60 * 60 *10))
@@ -82,6 +82,16 @@ public class JwtUtil {
         log.info("Token is valid. User ID: {}, Role: {}",
                 claims.get("userId"), claims.get("role"));
         return true;
+    }
+
+    public String getRoleFromToken(String token){
+        Claims claims = getAllClaimsFromToken(token);
+        return (String) claims.get("role");
+    }
+
+    public String getUserIDFromToken(String token){
+        Claims claims = getAllClaimsFromToken(token);
+        return (String) claims.get("userId");
     }
 
 }

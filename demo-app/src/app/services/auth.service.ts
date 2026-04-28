@@ -28,4 +28,16 @@ export class AuthService {
   register(personData: any): Observable<any>{
     return this.http.post(API_URL_REG, personData, {responseType: 'text'});
   }
+
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(API_URL_REG + `/forgot-password?email=${email}`, {}, { responseType: 'text' });
+  }
+
+  resetPassword(email: string, code: string, newPassword: string): Observable<any> {
+    return this.http.post(
+      API_URL_REG + `/reset-password?email=${email}&code=${code}&newPassword=${newPassword}`,
+      {},
+      { responseType: 'text' },
+    );
+  }
 }
