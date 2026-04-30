@@ -38,13 +38,33 @@ public class PersonController {
     }
 
     @GetMapping("{uuid}")
-    public ResponseEntity<?> getPersonById(@PathVariable UUID uuid) {
+    public ResponseEntity<?> getPersonById(@PathVariable UUID uuid,
+                                           @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        String role = jwtUtil.getRoleFromToken(token);
+        String tokenId = jwtUtil.getUserIdFromToken(token);
+
+        if (!"ADMIN".equals(role) && !tokenId.equals(uuid.toString())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Access Denied: You can only view your own profile.");
+        }
         return ResponseEntity.ok(personService.getPersonById(uuid));
     }
 
     @GetMapping("/email/{email}")
-    public ResponseEntity<?> getPersonByEmail(@PathVariable String email) {
-        return ResponseEntity.ok(personService.getPersonByEmail(email));
+    public ResponseEntity<?> getPersonByEmail(@PathVariable String email,
+                                              @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.substring(7);
+        String role = jwtUtil.getRoleFromToken(token);
+        String tokenId = jwtUtil.getUserIdFromToken(token);
+
+        Person person = personService.getPersonByEmail(email);
+
+        if (!"ADMIN".equals(role) && !tokenId.equals(person.getId().toString())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Access Denied: You can only view your own profile.");
+        }
+        return ResponseEntity.ok(person);
     }
 
     @PostMapping
@@ -55,14 +75,32 @@ public class PersonController {
     }
 
     @PostMapping("/{personId}/games/{gameId}")
-    public ResponseEntity<?> addGameToLibrary(@PathVariable UUID personId, @PathVariable UUID gameId) throws ValidationException {
+    public ResponseEntity<?> addGameToLibrary(@PathVariable UUID personId,
+                                              @PathVariable UUID gameId,
+                                              @RequestHeader("Authorization") String authHeader) throws ValidationException {
+        String token = authHeader.substring(7);
+        String role = jwtUtil.getRoleFromToken(token);
+        String tokenId = jwtUtil.getUserIdFromToken(token);
+
+        if (!"ADMIN".equals(role) && !tokenId.equals(personId.toString())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Access Denied: You can only add games to your own library.");
+        }
         return ResponseEntity.ok(personService.addGameToLibrary(personId, gameId));
     }
 
     @PutMapping("/{uuid}")
     public ResponseEntity<?> updatePerson(@PathVariable UUID uuid,
-                               @RequestBody Person person)
-            throws ValidationException {
+                                          @RequestBody Person person,
+                                          @RequestHeader("Authorization") String authHeader) throws ValidationException {
+        String token = authHeader.substring(7);
+        String role = jwtUtil.getRoleFromToken(token);
+        String tokenId = jwtUtil.getUserIdFromToken(token);
+
+        if (!"ADMIN".equals(role) && !tokenId.equals(uuid.toString())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Access Denied: You can only edit your own profile.");
+        }
         return ResponseEntity.ok(personService.updatePerson(uuid, person));
     }
 

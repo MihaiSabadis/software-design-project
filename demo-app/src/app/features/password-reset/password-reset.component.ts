@@ -35,12 +35,10 @@ export class PasswordResetComponent {
   step = signal<1 | 2>(1);
   isSubmitting = signal(false);
 
-  // Step 1 Form: Just the email
   emailForm = this.formBuilder.group({
     email: ['', [Validators.required, Validators.email]],
   });
 
-  // Step 2 Form: Code and New Password
   resetForm = this.formBuilder.group(
     {
       code: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6)]],
@@ -62,7 +60,7 @@ export class PasswordResetComponent {
 
     this.authService.forgotPassword(email).subscribe({
       next: () => {
-        this.step.set(2); // Move to step 2!
+        this.step.set(2);
         this.isSubmitting.set(false);
       },
       error: (err) => {
@@ -80,7 +78,7 @@ export class PasswordResetComponent {
 
     this.authService.resetPassword(email, code!, newPassword!).subscribe({
       next: () => {
-        this.router.navigate(['/login']); // Send them back to login!
+        this.router.navigate(['/login']);
       },
       error: (err) => {
         this.isSubmitting.set(false);

@@ -89,9 +89,8 @@ public class JwtUtil {
         return (String) claims.get("role");
     }
 
-    public String getUserIDFromToken(String token){
+    public String getUserIdFromToken(String token){
         Claims claims = getAllClaimsFromToken(token);
         return (String) claims.get("userId");
     }
-
 }

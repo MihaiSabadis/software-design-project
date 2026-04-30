@@ -53,7 +53,7 @@ export class LoginComponent {
           if (response.role === 'ADMIN') {
             void this.router.navigate(['/people']);
           } else if (response.role === 'PLAYER') {
-            void this.router.navigate(['/player']);
+            void this.router.navigate(['/games']);
           }
         }
       });
