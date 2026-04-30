@@ -6,6 +6,7 @@ import com.andrei.demo.repository.PersonRepository;
 import com.andrei.demo.repository.ReviewRepository;
 import com.andrei.demo.repository.VideoGameRepository;
 import com.andrei.demo.model.VideoGame;
+import com.andrei.demo.util.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,17 +50,21 @@ public class ReviewControllerIntegrationTests {
     @Autowired
     private VideoGameRepository videoGameRepository;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     private Person testUser;
     private VideoGame testGame;
     private Review testReview;
+    private String ownerToken;
 
     @BeforeEach
     void setUp() throws Exception {
         seedDatabase();
+        ownerToken = jwtUtil.createToken(testUser);
     }
 
     private void seedDatabase() throws Exception {
-
         String gameData = loadFixture("game_seed.json");
         List<VideoGame> games = objectMapper.readValue(gameData, new TypeReference<>() {});
         videoGameRepository.saveAll(games);
@@ -67,7 +72,7 @@ public class ReviewControllerIntegrationTests {
 
         String personData = loadFixture("person_seed.json");
         List<Person> people = objectMapper.readValue(personData, new TypeReference<>() {});
-        people.getFirst().getOwnedGames().add(testGame); // Add game to library
+        people.getFirst().getOwnedGames().add(testGame);
         personRepository.saveAll(people);
         testUser = personRepository.findAll().getFirst();
 
@@ -82,7 +87,8 @@ public class ReviewControllerIntegrationTests {
 
     @Test
     void testGetAllReviews() throws Exception {
-        mockMvc.perform(get("/reviews"))
+        mockMvc.perform(get("/reviews")
+                        .header("Authorization", "Bearer " + ownerToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].score").value(5))
@@ -91,7 +97,8 @@ public class ReviewControllerIntegrationTests {
 
     @Test
     void testGetReviewById_Success() throws Exception {
-        mockMvc.perform(get("/reviews/" + testReview.getId()))
+        mockMvc.perform(get("/reviews/" + testReview.getId())
+                        .header("Authorization", "Bearer " + ownerToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.score").value(5))
                 .andExpect(jsonPath("$.comment").value("Amazing game!"));
@@ -114,6 +121,7 @@ public class ReviewControllerIntegrationTests {
         String newReviewJson = String.format(template, testUser.getId().toString(), newGame.getId().toString());
 
         mockMvc.perform(post("/reviews")
+                        .header("Authorization", "Bearer " + ownerToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(newReviewJson))
                 .andExpect(status().isOk())
@@ -129,6 +137,7 @@ public class ReviewControllerIntegrationTests {
         String updateReviewJson = String.format(template, testUser.getId().toString(), testGame.getId().toString());
 
         mockMvc.perform(put("/reviews/" + testReview.getId())
+                        .header("Authorization", "Bearer " + ownerToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updateReviewJson))
                 .andExpect(status().isOk())
@@ -144,6 +153,7 @@ public class ReviewControllerIntegrationTests {
         String patchJson = loadFixture("patch_review.json");
 
         mockMvc.perform(patch("/reviews/" + testReview.getId())
+                        .header("Authorization", "Bearer " + ownerToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(patchJson))
                 .andExpect(status().isOk())
@@ -158,7 +168,8 @@ public class ReviewControllerIntegrationTests {
     void testDeleteReview_Success() throws Exception {
         long initialCount = reviewRepository.count();
 
-        mockMvc.perform(delete("/reviews/" + testReview.getId()))
+        mockMvc.perform(delete("/reviews/" + testReview.getId())
+                        .header("Authorization", "Bearer " + ownerToken))
                 .andExpect(status().isOk());
 
         assertEquals(initialCount - 1, reviewRepository.count());
