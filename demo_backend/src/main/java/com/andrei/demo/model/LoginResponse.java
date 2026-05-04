@@ -4,12 +4,13 @@ public record LoginResponse(
         Boolean success,
         String role,
         String errorMessage,
-        String token
+        String token,
+        String userId
 ) {
     public LoginResponse(String errorMessage){
-        this(false, null, errorMessage, null);
+        this(false, null, errorMessage, null, null);
     }
-    public LoginResponse(String role, String token){
-        this(true, role, null, token);
+    public LoginResponse(String role, String token,String userId){
+        this(true, role, null, token,userId);
     }
 }

@@ -26,8 +26,8 @@ export class ReviewService {
     return this.http.put<Review>(`${this.apiUrl}/${reviewId}`, reviewData);
   }
 
-  deleteReview(reviewId: string): Observable<void> {
+  deleteReview(reviewId: string): Observable<String> {
     // FIX: Cleaning up the delete path
-    return this.http.delete<void>(`${this.apiUrl}/${reviewId}`);
+    return this.http.delete(`${this.apiUrl}/${reviewId}`, {responseType: 'text'});
   }
 }

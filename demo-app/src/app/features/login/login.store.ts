@@ -6,6 +6,7 @@ import { LoginRequest, LoginResponse, AuthService } from '../../services/auth.se
 interface AuthSnapshot {
   role: string | null;
   token: string;
+  userId: string | null;
 }
 
 const STORAGE_KEY = 'demo-app-auth';
@@ -17,8 +18,9 @@ export class LoginStore {
   readonly isSubmitting = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly token = signal<string | null>(null);
-  readonly isAuthenticated = computed(() => this.token() !==null);
+  readonly isAuthenticated = computed(() => this.token() !== null);
   readonly role = signal<string | null>(null);
+  readonly userId = signal<string | null>(null);
 
   constructor() {
     this.restoreAuthState();
@@ -47,6 +49,7 @@ export class LoginStore {
     if (response.success && response.token) {
       this.token.set(response.token);
       this.role.set(response.role);
+      this.userId.set(response.userId);
       this.errorMessage.set(null);
       this.persistAuthState();
       return;
@@ -62,6 +65,7 @@ export class LoginStore {
         return {
           success: maybeError.success,
           role: maybeError.role ?? null,
+          userId: maybeError.userId ?? null,
           token: maybeError.token ?? null,
           errorMessage:
             maybeError.errorMessage ??
@@ -76,6 +80,7 @@ export class LoginStore {
       success: false,
       role: null,
       token: null,
+      userId: null,
       errorMessage: 'Unable to complete login. Please try again.',
     };
   }
@@ -88,20 +93,20 @@ export class LoginStore {
 
     try {
       const snapshot = JSON.parse(stored) as AuthSnapshot;
-      if(!snapshot.token){
+      if (!snapshot.token) {
         this.clearSession();
         return;
       }
 
       this.token.set(snapshot.token);
       this.role.set(snapshot.role ?? null);
+      this.userId.set(snapshot.userId ?? null);
     } catch {
       this.clearSession();
     }
   }
 
   private persistAuthState(): void {
-
     const token = this.token();
     if (!token) {
       return;
@@ -110,6 +115,7 @@ export class LoginStore {
     const snapshot: AuthSnapshot = {
       role: this.role(),
       token,
+      userId: this.userId(),
     };
 
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
@@ -118,6 +124,7 @@ export class LoginStore {
   private clearSession(errorMessage: string | null = null): void {
     this.token.set(null);
     this.role.set(null);
+    this.userId.set(null);
     this.errorMessage.set(errorMessage);
     sessionStorage.removeItem(STORAGE_KEY);
   }

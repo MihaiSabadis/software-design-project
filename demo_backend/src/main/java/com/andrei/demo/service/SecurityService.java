@@ -27,9 +27,10 @@ public class SecurityService {
         }
         Person person = maybePerson.get();
         String role = String.valueOf(person.getRole());
+        String userId = String.valueOf(person.getId());
         if(passwordUtil.checkPassword(password,person.getPassword())){
             String token = jwtUtil.createToken(person);
-            return new LoginResponse(role,token);
+            return new LoginResponse(role,token,userId);
         } else {
             return new LoginResponse("Incorrect password");
         }
