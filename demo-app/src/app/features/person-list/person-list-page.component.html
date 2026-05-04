@@ -1,5 +1,10 @@
-<mat-toolbar color="primary">
-  <span>Person Manager</span>
+<mat-toolbar color="primary" class="page-toolbar">
+  <span class="toolbar-title">Person Manager</span>
+  <span class="toolbar-spacer" aria-hidden="true"></span>
+  <button mat-button type="button" (click)="logout()" aria-label="Sign out">
+    <mat-icon aria-hidden="true">logout</mat-icon>
+    Logout
+  </button>
 </mat-toolbar>
 <main class="content">
   <header class="page-header">

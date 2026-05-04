@@ -3,6 +3,8 @@ package com.andrei.demo.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,14 +31,20 @@ public class Person {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
+    @Column(name = "reset_code")
+    private String resetCode;
+
+    @Column(name = "reset_code_expiration")
+    private LocalDateTime resetCodeExpiration;
+
     @ManyToMany
     @JoinTable(
             name = "player_library",
             joinColumns = @JoinColumn(name="person_id"),
             inverseJoinColumns = @JoinColumn(name = "game_id")
     )
-    private List<VideoGame> ownedGames;
+    private List<VideoGame> ownedGames = new ArrayList<>();
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Review> writtenReviews;
+    private List<Review> writtenReviews =  new ArrayList<>();
 }

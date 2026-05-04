@@ -5,7 +5,9 @@ import com.andrei.demo.model.Person;
 import com.andrei.demo.model.PersonCreateDTO;
 import com.andrei.demo.model.VideoGame;
 import com.andrei.demo.repository.PersonRepository;
+import com.andrei.demo.util.PasswordUtil;
 import com.andrei.demo.repository.VideoGameRepository;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +20,9 @@ import java.util.UUID;
 public class PersonService {
     private final PersonRepository personRepository;
     private final VideoGameRepository videoGameRepository;
+    private final PasswordUtil passwordUtil;
+
+    private final EmailService emailService;
 
     public List<Person> getPeople() {
         return personRepository.findAll();
@@ -35,7 +40,8 @@ public class PersonService {
         person.setName(personDTO.getName());
         person.setAge(personDTO.getAge());
         person.setEmail(personDTO.getEmail());
-        person.setPassword(personDTO.getPassword());
+        String hashedPassword = passwordUtil.hashPassword(personDTO.getPassword());
+        person.setPassword(hashedPassword);
 
         return personRepository.save(person);
     }
@@ -58,24 +64,8 @@ public class PersonService {
         existingPerson.setName(person.getName());
         existingPerson.setAge(person.getAge());
         existingPerson.setEmail(person.getEmail());
-        existingPerson.setPassword(person.getPassword());
 
         return personRepository.save(existingPerson);
-    }
-
-    public Person updatePerson2(UUID uuid, Person person) throws ValidationException{
-        return personRepository
-                        .findById(uuid)
-                        .map(existingPerson -> {
-                            existingPerson.setName(person.getName());
-                            existingPerson.setAge(person.getAge());
-                            existingPerson.setEmail(person.getEmail());
-                            existingPerson.setPassword(person.getPassword());
-                            return personRepository.save(existingPerson);
-                        })
-                        .orElseThrow(
-                                () -> new ValidationException("Person with id " + uuid + " not found")
-                        );
     }
 
     public void deletePerson(UUID uuid) {
@@ -92,6 +82,7 @@ public class PersonService {
                 () -> new IllegalStateException("Person with id " + uuid + " not found"));
     }
 
+    @Transactional
     public Person addGameToLibrary(UUID personId, UUID gameId) throws ValidationException {
         Person person = personRepository.findById(personId)
                 .orElseThrow(() -> new ValidationException("Person with ID " + personId + " not found"));
@@ -105,5 +96,40 @@ public class PersonService {
 
         person.getOwnedGames().add(game);
         return personRepository.save(person);
+    }
+
+
+    public void forgotPassword(String email) throws ValidationException {
+        Person person = personRepository.findByEmail(email)
+                .orElseThrow(() -> new ValidationException("No account found with that email."));
+
+        String code = String.format("%06d", new java.util.Random().nextInt(999999));
+
+        person.setResetCode(code);
+        person.setResetCodeExpiration(java.time.LocalDateTime.now().plusMinutes(10));
+        personRepository.save(person);
+
+        emailService.sendPasswordResetEmail(person.getEmail(), code);
+    }
+
+    public void resetPassword(String email, String code, String newPassword) throws ValidationException {
+        Person person = personRepository.findByEmail(email)
+                .orElseThrow(() -> new ValidationException("No account found with that email."));
+
+        if (person.getResetCode() == null || !person.getResetCode().equals(code)) {
+            throw new ValidationException("Invalid reset code.");
+        }
+
+        if (person.getResetCodeExpiration().isBefore(java.time.LocalDateTime.now())) {
+            throw new ValidationException("Reset code has expired. Please request a new one.");
+        }
+
+        person.setPassword(passwordUtil.hashPassword(newPassword));
+
+        person.setResetCode(null);
+        person.setResetCodeExpiration(null);
+        personRepository.save(person);
+
+        emailService.sendPasswordChangeConfirmation(person.getEmail());
     }
 }

@@ -5,6 +5,7 @@ import com.andrei.demo.model.VideoGameCreateDTO;
 import com.andrei.demo.repository.VideoGameRepository;
 import jakarta.validation.ValidationException;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,9 +33,14 @@ public class VideoGameService {
     }
 
     public VideoGame addVideoGame(VideoGameCreateDTO videoGameDTO){
-        VideoGame videoGame = new VideoGame();
 
+        if (videoGameRepository.existsByTitle(videoGameDTO.getTitle())) {
+            throw new ValidationException("A video game with this title already exists!");
+        }
+
+        VideoGame videoGame = new VideoGame();
         videoGame.setTitle(videoGameDTO.getTitle());
+        videoGame.setDeveloper(videoGameDTO.getDeveloper());
         videoGame.setPrice(videoGameDTO.getPrice());
         return videoGameRepository.save(videoGame);
     }
@@ -48,6 +54,7 @@ public class VideoGameService {
         VideoGame existingVideoGame = videoGameOptional.get();
 
         existingVideoGame.setTitle(videoGame.getTitle());
+        existingVideoGame.setDeveloper(videoGame.getDeveloper());
         existingVideoGame.setPrice(videoGame.getPrice());
 
         return videoGameRepository.save(existingVideoGame);
@@ -66,6 +73,15 @@ public class VideoGameService {
             existingVideoGame.setTitle(newTitle);
         }
 
+        if(updates.containsKey("developer")){
+            String newDeveloper = (String) updates.get("developer");
+
+            if(newDeveloper != null && newDeveloper.trim().isEmpty()){
+                throw new ValidationException("Developer cannot be empty.");
+            }
+            existingVideoGame.setDeveloper(newDeveloper);
+        }
+
         if (updates.containsKey("price")){
             existingVideoGame.setPrice( (Double) updates.get("price"));
         }
@@ -80,4 +96,12 @@ public class VideoGameService {
         videoGameRepository.deleteById(id);
     }
 
+    public List<VideoGame> getFilteredVideoGames(String title, String developer, Double maxPrice, String sortBy, String sortDir) {
+
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+
+        String processedTitle = (title == null || title.trim().isEmpty()) ? null : "%" + title.toLowerCase() + "%";
+
+        return videoGameRepository.searchAndFilterGames(processedTitle, developer, maxPrice, sort);
+    }
 }

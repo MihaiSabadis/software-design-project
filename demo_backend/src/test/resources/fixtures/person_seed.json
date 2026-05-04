@@ -5,7 +5,7 @@
     "password": "Password_john123!@#",
     "age": 30,
     "email": "john.doe@example.com",
-    "role": "PLAYER"
+    "role": "ADMIN"
   },
   {
     "id": null,
@@ -13,6 +13,6 @@
     "password": "Password_jane123!@#",
     "age": 25,
     "email": "jane.doe@example.com",
-    "role": "ADMIN"
+    "role": "PLAYER"
   }
 ]

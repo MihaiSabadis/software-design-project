@@ -11,6 +11,9 @@ public class VideoGameCreateDTO {
     @NotBlank(message = "Title is required")
     private String title;
 
+    @NotBlank(message = "Developer is required")
+    private String developer;
+
     @NotNull(message = "Price is required")
     @Min(value = 0, message = "Price cannot be negative")
     private Double price;

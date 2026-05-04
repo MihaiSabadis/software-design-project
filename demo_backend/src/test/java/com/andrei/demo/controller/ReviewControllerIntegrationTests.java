@@ -1,34 +1,48 @@
 package com.andrei.demo.controller;
 
 import com.andrei.demo.model.Person;
-import com.andrei.demo.model.VideoGame;
-import com.andrei.demo.model.ReviewCreateDTO;
+import com.andrei.demo.model.Review;
 import com.andrei.demo.repository.PersonRepository;
+import com.andrei.demo.repository.ReviewRepository;
 import com.andrei.demo.repository.VideoGameRepository;
-import tools.jackson.databind.ObjectMapper;
+import com.andrei.demo.model.VideoGame;
+import com.andrei.demo.util.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
-import static com.andrei.demo.model.Role.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@TestPropertySource(locations = "classpath:application-test.properties")
+@Transactional
 public class ReviewControllerIntegrationTests {
+
+    private static final String FIXTURE_PATH = "src/test/resources/fixtures/";
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private ReviewRepository reviewRepository;
 
     @Autowired
     private PersonRepository personRepository;
@@ -36,66 +50,133 @@ public class ReviewControllerIntegrationTests {
     @Autowired
     private VideoGameRepository videoGameRepository;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     private Person testUser;
     private VideoGame testGame;
+    private Review testReview;
+    private String ownerToken;
 
     @BeforeEach
-    void setUp() {
-        // Curățăm baza de date înainte de fiecare test pentru a nu avea conflicte
-        personRepository.deleteAll();
-        videoGameRepository.deleteAll();
+    void setUp() throws Exception {
+        seedDatabase();
+        ownerToken = jwtUtil.createToken(testUser);
+    }
 
-        // 1. Creăm și salvăm un user real în baza de date H2
-        testUser = new Person();
-        testUser.setName("Integration Tester");
-        testUser.setEmail("tester@example.com");
-        testUser.setPassword("StrongPass123!@");
-        testUser.setAge(25);
-        testUser.setRole(PLAYER);
-        testUser.setOwnedGames(new ArrayList<>());
-        testUser = personRepository.save(testUser);
+    private void seedDatabase() throws Exception {
+        String gameData = loadFixture("game_seed.json");
+        List<VideoGame> games = objectMapper.readValue(gameData, new TypeReference<>() {});
+        videoGameRepository.saveAll(games);
+        testGame = videoGameRepository.findAll().getFirst();
 
-        // 2. Creăm și salvăm un joc real în baza de date H2
-        testGame = new VideoGame();
-        testGame.setTitle("Test Game");
-        testGame.setPrice(59.99);
-        testGame = videoGameRepository.save(testGame);
+        String personData = loadFixture("person_seed.json");
+        List<Person> people = objectMapper.readValue(personData, new TypeReference<>() {});
+        people.getFirst().getOwnedGames().add(testGame);
+        personRepository.saveAll(people);
+        testUser = personRepository.findAll().getFirst();
+
+        String reviewData = loadFixture("review_seed.json");
+        List<Review> reviews = objectMapper.readValue(reviewData, new TypeReference<>() {});
+
+        Review review = reviews.getFirst();
+        review.setAuthor(testUser);
+        review.setGame(testGame);
+        testReview = reviewRepository.save(review);
     }
 
     @Test
-    void givenGameNotInLibrary_whenPostReview_thenReturnBadRequest() throws Exception {
-        // ARRANGE: Creăm payload-ul de review (User-ul NU are jocul în librărie)
-        ReviewCreateDTO payload = new ReviewCreateDTO();
-        payload.setAuthorId(testUser.getId());
-        payload.setGameId(testGame.getId());
-        payload.setScore(1);
-        payload.setComment("Terrible game!");
-
-        // ACT & ASSERT: Simulam request-ul HTTP POST și ne așteptăm să pice (400 Bad Request)
-        // Notă: Dacă GlobalExceptionHandler-ul tău returnează alt status pentru ValidationException, schimbă isBadRequest()
-        mockMvc.perform(post("/reviews")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(payload)))
-                .andExpect(status().isBadRequest());
+    void testGetAllReviews() throws Exception {
+        mockMvc.perform(get("/reviews")
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].score").value(5))
+                .andExpect(jsonPath("$[0].comment").value("Amazing game!"));
     }
 
     @Test
-    void givenGameInLibrary_whenPostReview_thenReturnOk() throws Exception {
-        // ARRANGE 1: Adăugăm jocul în librăria user-ului și salvăm în DB
-        testUser.getOwnedGames().add(testGame);
+    void testGetReviewById_Success() throws Exception {
+        mockMvc.perform(get("/reviews/" + testReview.getId())
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.score").value(5))
+                .andExpect(jsonPath("$.comment").value("Amazing game!"));
+    }
+
+    @Test
+    void testAddReview_Success() throws Exception {
+        VideoGame newGame = new VideoGame();
+        newGame.setTitle("Cyberpunk 2077");
+        newGame.setPrice(59.99);
+        newGame.setDeveloper("CD Projekt Red");
+        newGame = videoGameRepository.save(newGame);
+
+        testUser.getOwnedGames().add(newGame);
         personRepository.save(testUser);
 
-        // ARRANGE 2: Creăm payload-ul de review
-        ReviewCreateDTO payload = new ReviewCreateDTO();
-        payload.setAuthorId(testUser.getId());
-        payload.setGameId(testGame.getId());
-        payload.setScore(5);
-        payload.setComment("Amazing game!");
+        long initialCount = reviewRepository.count();
 
-        // ACT & ASSERT: Simulam request-ul HTTP POST și ne așteptăm să meargă (200 OK sau 201 Created)
+        String template = loadFixture("new_review_template.json");
+        String newReviewJson = String.format(template, testUser.getId().toString(), newGame.getId().toString());
+
         mockMvc.perform(post("/reviews")
+                        .header("Authorization", "Bearer " + ownerToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(payload)))
-                .andExpect(status().isOk()); // Dacă metoda ta din Controller returnează 201, folosește isCreated()
+                        .content(newReviewJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.score").value(4))
+                .andExpect(jsonPath("$.comment").value("Pretty good, lots of neon."));
+
+        assertEquals(initialCount + 1, reviewRepository.count());
+    }
+
+    @Test
+    void testUpdateReview_Success() throws Exception {
+        String template = loadFixture("update_review_template.json");
+        String updateReviewJson = String.format(template, testUser.getId().toString(), testGame.getId().toString());
+
+        mockMvc.perform(put("/reviews/" + testReview.getId())
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateReviewJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.score").value(2))
+                .andExpect(jsonPath("$.comment").value("I changed my mind, too many bugs."));
+
+        Review updatedInDb = reviewRepository.findById(testReview.getId()).orElseThrow();
+        assertEquals(2, updatedInDb.getScore());
+    }
+
+    @Test
+    void testPatchReview_Success() throws Exception {
+        String patchJson = loadFixture("patch_review.json");
+
+        mockMvc.perform(patch("/reviews/" + testReview.getId())
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(patchJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.score").value(3))
+                .andExpect(jsonPath("$.comment").value("Amazing game!"));
+
+        Review patchedInDb = reviewRepository.findById(testReview.getId()).orElseThrow();
+        assertEquals(3, patchedInDb.getScore());
+    }
+
+    @Test
+    void testDeleteReview_Success() throws Exception {
+        long initialCount = reviewRepository.count();
+
+        mockMvc.perform(delete("/reviews/" + testReview.getId())
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isOk());
+
+        assertEquals(initialCount - 1, reviewRepository.count());
+        assertFalse(reviewRepository.existsById(testReview.getId()));
+    }
+
+    private String loadFixture(String fileName) throws IOException {
+        return Files.readString(Paths.get(FIXTURE_PATH + fileName));
     }
 }

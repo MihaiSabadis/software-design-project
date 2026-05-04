@@ -1,0 +1,94 @@
+<div class="details-container">
+
+  <button class="btn-back" routerLink="/games">&larr; Back to Store</button>
+
+  @if (game) {
+    <section class="hero-section">
+      <h1>{{ game.title }}</h1>
+      <p class="game-meta">
+        Developer: {{ game.developer }} | Price: ${{ game.price }}
+      </p>
+
+      @if (isOwned) {
+        <button class="btn-submit" disabled style="background-color: #4caf50;">✓ Owned</button>
+      } @else {
+        <button class="btn-submit" (click)="addToLibrary()">Add to Library</button>
+      }
+
+    </section>
+  }
+
+  <section class="smart-area">
+    <h2>My Review</h2>
+
+    @if (isOwned) {
+      <section class="smart-area">
+      </section>
+    } @else {
+      <section class="smart-area" style="text-align: center; padding: 2rem;">
+        <h3>You must own this game to leave a review.</h3>
+      </section>
+    }
+
+    @if (userReview && !isEditing) {
+      <div class="review-card owner-review">
+        <h4>You rated it: {{ userReview.score }} / 5</h4>
+        <p>{{ userReview.comment }}</p>
+
+        <div style="margin-top: 1rem; display: flex; gap: 10px;">
+          <button class="btn-submit" style="background: #2196f3;" (click)="startEditing()">Edit My Review</button>
+            <button class="btn-delete" (click)="deleteMyReview()">Delete</button>
+        </div>
+      </div>
+    }
+
+    @if (!userReview || isEditing) {
+      <div class="review-form">
+        <div class="form-group">
+          <label for="score-select">Rating:</label>
+          <select id="score-select" [(ngModel)]="newReview.score">
+            <option [ngValue]="1">1 - Terrible</option>
+            <option [ngValue]="2">2 - Bad</option>
+            <option [ngValue]="3">3 - Okay</option>
+            <option [ngValue]="4">4 - Good</option>
+            <option [ngValue]="5">5 - Masterpiece</option>
+          </select>
+        </div>
+
+        <textarea
+          [(ngModel)]="newReview.comment"
+          rows="4"
+          placeholder="What did you think of the game?"></textarea>
+
+        <div style="margin-top: 1rem; display: flex; gap: 10px;">
+          @if (!isEditing) {
+            <button class="btn-submit" (click)="submitReview()">Post Review</button>
+          }
+          @else {
+            <button class="btn-submit" (click)="submitEdit()">Save Changes</button>
+            <button class="btn-back" (click)="cancelEditing()" style="margin-bottom: 0;">Cancel</button>
+          }
+        </div>
+      </div>
+    }
+  </section>
+
+  <section class="community-section">
+    <h2>Community Reviews</h2>
+
+    @for (review of reviews; track review.id) {
+      @if (review.authorId !== currentUser) {
+        <div class="review-card community-review">
+          <strong>{{ review.authorName }}</strong>
+          <span class="rating"> ({{ review.score }} / 5)</span>
+          <p>{{ review.comment }}</p>
+        </div>
+      }
+    }
+
+    @if (reviews.length === 0 || (reviews.length === 1 && userReview)) {
+      <p class="empty-state">No community reviews yet. Be the first to share your thoughts!</p>
+    }
+  </section>
+
+</div>

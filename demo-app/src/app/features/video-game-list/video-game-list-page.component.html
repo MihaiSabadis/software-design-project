@@ -1,0 +1,75 @@
+<div class="games-container">
+  <header>
+    <h1>Video Games</h1>
+    @if (loginStore.role() === 'ADMIN') {
+      <button class="btn-primary" (click)="openDialog()">+ Add New Game</button>
+    }
+  </header>
+
+  <section class="filters-section">
+    <div class="filter-group">
+      <label for="title">Search Title:</label>
+      <input type="text" id="title" [(ngModel)]="titleSearchString" placeholder="e.g. Mario">
+    </div>
+
+    <div class="filter-group">
+      <label for="developer">Developer:</label>
+      <input
+        type="text"
+        id="developer"
+        [(ngModel)]="developerSearchString"
+        placeholder="e.g. Valve"
+      >
+    </div>
+
+    <div class="filter-group">
+      <label for="maxPrice">Max Price ($):</label>
+      <input
+        type="number"
+        id="maxPrice"
+        [(ngModel)]="maxPrice"
+        placeholder="e.g. 50"
+      >
+    </div>
+
+    <div class="filter-group">
+      <label>Sort By:</label>
+      <select [(ngModel)]="sortBy" style="padding: 0.5rem; border-radius: 4px; border: 1px solid #ccc;">
+        <option value="title">Title</option>
+        <option value="price">Price</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Direction:</label>
+      <select [(ngModel)]="sortDir" style="padding: 0.5rem; border-radius: 4px; border: 1px solid #ccc;">
+        <option value="asc">Ascending (A-Z / Low-High)</option>
+        <option value="desc">Descending (Z-A / High-Low)</option>
+      </select>
+    </div>
+
+    <button class="btn-primary" (click)="onFilterChange()">Apply Filters</button>
+  </section>
+
+  <section class="games-grid">
+    @for (game of games; track game.title) {
+      <app-video-game-card
+        [game]="game"
+        (deleteClick)="handleDeleteGame($event)"
+        (editClick)="handleEditGame($event)">
+      </app-video-game-card>
+    } @empty {
+      <div class="empty-state">
+        <p>No games found matching these filters.</p>
+      </div>
+    }
+  </section>
+</div>
+
+@if (isDialogOpen){
+  <app-video-game-form-dialog
+    [gameToEdit]="gameBeingEdited"
+    (closeDialog)="closeDialog()"
+    (saveGame)="handleSaveGame($event)">
+  </app-video-game-form-dialog>
+}
