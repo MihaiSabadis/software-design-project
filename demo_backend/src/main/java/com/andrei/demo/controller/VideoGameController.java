@@ -3,11 +3,10 @@ package com.andrei.demo.controller;
 import com.andrei.demo.model.VideoGame;
 import com.andrei.demo.model.VideoGameCreateDTO;
 import com.andrei.demo.service.VideoGameService;
-import com.andrei.demo.util.JwtUtil;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,8 +18,8 @@ import java.util.UUID;
 @RequestMapping("/videogames")
 @AllArgsConstructor
 public class VideoGameController {
+
     private final VideoGameService videoGameService;
-    private final JwtUtil jwtUtil;
 
     @GetMapping
     public List<VideoGame> getVideoGames(
@@ -32,11 +31,9 @@ public class VideoGameController {
 
         if (maxPrice == null && developer == null && title == null) {
             return videoGameService.getAllVideoGames();
+        } else {
+            return videoGameService.getFilteredVideoGames(title, developer, maxPrice, sortBy, sortDir);
         }
-        else{
-            return videoGameService.getFilteredVideoGames(title,developer,maxPrice,sortBy,sortDir);
-        }
-
     }
 
     @GetMapping("/{uuid}")
@@ -49,49 +46,28 @@ public class VideoGameController {
         return videoGameService.getVideoGameByTitle(title);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<?> addVideoGame(@Valid @RequestBody VideoGameCreateDTO gameDTO,
-                                          @RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.substring(7);
-        if (!"ADMIN".equals(jwtUtil.getRoleFromToken(token))) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Access Denied: Only Admins can create games.");
-        }
+    public ResponseEntity<?> addVideoGame(@Valid @RequestBody VideoGameCreateDTO gameDTO) {
         return ResponseEntity.ok(videoGameService.addVideoGame(gameDTO));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{uuid}")
-    public ResponseEntity<?> updateVideoGame(@PathVariable UUID uuid,
-                                             @RequestBody VideoGame game,
-                                             @RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.substring(7);
-        if (!"ADMIN".equals(jwtUtil.getRoleFromToken(token))) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Access Denied: Only Admins can edit games.");
-        }
+    public ResponseEntity<?> updateVideoGame(@PathVariable UUID uuid, @RequestBody VideoGame game) {
         return ResponseEntity.ok(videoGameService.updateVideoGame(uuid, game));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{uuid}")
-    public ResponseEntity<String> patchVideoGame(@PathVariable UUID uuid, @RequestBody Map<String,
-                Object> updates, @RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.substring(7);
-        if (!"ADMIN".equals(jwtUtil.getRoleFromToken(token))) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Access Denied: Only Admins can delete games.");
-        }
-        videoGameService.patchVideoGame(uuid,updates);
+    public ResponseEntity<String> patchVideoGame(@PathVariable UUID uuid, @RequestBody Map<String, Object> updates) {
+        videoGameService.patchVideoGame(uuid, updates);
         return ResponseEntity.ok("Game patched successfully");
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{uuid}")
-    public ResponseEntity<?> deleteVideoGame(@PathVariable UUID uuid,
-                                             @RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.substring(7);
-        if (!"ADMIN".equals(jwtUtil.getRoleFromToken(token))) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Access Denied: Only Admins can delete games.");
-        }
+    public ResponseEntity<?> deleteVideoGame(@PathVariable UUID uuid) {
         videoGameService.deleteVideoGame(uuid);
         return ResponseEntity.ok("Game deleted successfully");
     }

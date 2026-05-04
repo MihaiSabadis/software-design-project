@@ -1,15 +1,12 @@
 package com.andrei.demo.controller;
 
 import com.andrei.demo.config.ValidationException;
-import com.andrei.demo.model.Review;
 import com.andrei.demo.model.ReviewCreateDTO;
-import com.andrei.demo.service.PersonService;
 import com.andrei.demo.service.ReviewService;
-import com.andrei.demo.util.JwtUtil;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -22,8 +19,6 @@ import java.util.UUID;
 public class ReviewController {
 
     private final ReviewService reviewService;
-    private final PersonService personService;
-    private final JwtUtil jwtUtil;
 
     @GetMapping
     public ResponseEntity<?> getAllReviews() {
@@ -40,73 +35,27 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.getReviewsForGame(gameId));
     }
 
-
+    @PreAuthorize("hasRole('ADMIN') or principal == #reviewDTO.authorId.toString()")
     @PostMapping
-    public ResponseEntity<?> addReview(@Valid @RequestBody ReviewCreateDTO reviewDTO,
-                                       @RequestHeader("Authorization") String authHeader) throws ValidationException {
-        String token = authHeader.substring(7);
-        String role = jwtUtil.getRoleFromToken(token);
-        String tokenId = jwtUtil.getUserIdFromToken(token);
-
-        // Check if a player is trying to spoof someone else's ID in the DTO
-        if (!"ADMIN".equals(role) && !tokenId.equals(reviewDTO.getAuthorId().toString())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Access Denied: You cannot post a review as another user.");
-        }
-
+    public ResponseEntity<?> addReview(@Valid @RequestBody ReviewCreateDTO reviewDTO) throws ValidationException {
         return ResponseEntity.ok(reviewService.addReview(reviewDTO));
     }
 
+    @PreAuthorize("hasRole('ADMIN') or @reviewService.getReviewById(#uuid).author.id.toString() == principal")
     @PutMapping("/{uuid}")
-    public ResponseEntity<?> updateReview(@PathVariable UUID uuid,
-                                          @Valid @RequestBody ReviewCreateDTO reviewDTO,
-                                          @RequestHeader("Authorization") String authHeader) throws ValidationException {
-        String token = authHeader.substring(7);
-        String role = jwtUtil.getRoleFromToken(token);
-        String tokenId = jwtUtil.getUserIdFromToken(token);
-
-        Review existingReview = reviewService.getReviewById(uuid);
-
-        if (!"ADMIN".equals(role) && !tokenId.equals(existingReview.getAuthor().getId().toString())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Access Denied: You can only edit your own reviews.");
-        }
-
+    public ResponseEntity<?> updateReview(@PathVariable UUID uuid, @Valid @RequestBody ReviewCreateDTO reviewDTO) throws ValidationException {
         return ResponseEntity.ok(reviewService.updateReview(uuid, reviewDTO));
     }
 
+    @PreAuthorize("hasRole('ADMIN') or @reviewService.getReviewById(#uuid).author.id.toString() == principal")
     @PatchMapping("/{uuid}")
-    public ResponseEntity<?> patchReview(@PathVariable UUID uuid,
-                                         @RequestBody Map<String, Object> updates,
-                                         @RequestHeader("Authorization") String authHeader) throws ValidationException {
-        String token = authHeader.substring(7);
-        String role = jwtUtil.getRoleFromToken(token);
-        String tokenId = jwtUtil.getUserIdFromToken(token);
-
-        Review existingReview = reviewService.getReviewById(uuid);
-
-        if (!"ADMIN".equals(role) && !tokenId.equals(existingReview.getAuthor().getId().toString())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Access Denied: You can only edit your own reviews.");
-        }
-
+    public ResponseEntity<?> patchReview(@PathVariable UUID uuid, @RequestBody Map<String, Object> updates) throws ValidationException {
         return ResponseEntity.ok(reviewService.patchReview(uuid, updates));
     }
 
+    @PreAuthorize("hasRole('ADMIN') or @reviewService.getReviewById(#uuid).author.id.toString() == principal")
     @DeleteMapping("/{uuid}")
-    public ResponseEntity<?> deleteReview(@PathVariable UUID uuid,
-                                          @RequestHeader("Authorization") String authHeader) throws ValidationException {
-        String token = authHeader.substring(7);
-        String role = jwtUtil.getRoleFromToken(token);
-        String tokenId = jwtUtil.getUserIdFromToken(token);
-
-        Review existingReview = reviewService.getReviewById(uuid);
-
-        if (!"ADMIN".equals(role) && !tokenId.equals(existingReview.getAuthor().getId().toString())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("Access Denied: You can only delete your own reviews.");
-        }
-
+    public ResponseEntity<?> deleteReview(@PathVariable UUID uuid) throws ValidationException {
         reviewService.deleteReview(uuid);
         return ResponseEntity.ok("Review deleted successfully");
     }
