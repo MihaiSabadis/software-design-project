@@ -3,7 +3,6 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { VideoGame } from '../models/video-game.model';
 import {VideoGameCreateDTO} from "../models/video-game-create.dto";
-import { Person } from '../models/person.model';
 
 @Injectable({ providedIn: 'root' })
 export class VideoGameService {
