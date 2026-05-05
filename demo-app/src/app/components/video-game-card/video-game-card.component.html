@@ -1,15 +1,33 @@
 <div class="card-container">
-  <div class="card-info">
-    <h3>{{ game.title }}</h3>
-    <p class="developer"><strong>Developer:</strong> {{ game.developer || 'Unknown' }}</p>
+  <!-- Top Section: Edge-to-edge Image -->
+  <div class="game-cover-container">
+    <img
+      [src]="game.coverImageUrl || 'https://via.placeholder.com/300x400?text=No+Cover'"
+      alt="{{ game.title }} cover"
+    >
   </div>
 
-  <div class="card-actions">
-    <p class="price">${{ game.price }}</p>
-    <button class="btn-details" [routerLink]="['/games', game.id]"> View Details </button>
-    @if (loginStore.role() === 'ADMIN') {
-      <button class="btn-primary" (click)="onEdit()">Edit</button>
-      <button class="btn-danger" (click) = "onDelete()"> Delete </button>
-    }
+  <!-- Bottom Section: Dark Purple Info Area -->
+  <div class="card-content">
+    <div class="card-info">
+      <h3>{{ game.title }}</h3>
+      <p class="developer">{{ game.developer || 'Unknown' }}</p>
+    </div>
+
+    <!-- Pricing Area matching Eneba -->
+    <div class="card-price-section">
+      <span class="price-label">De la</span>
+      <p class="price">${{ game.price }}</p>
+    </div>
+
+    <!-- Buttons -->
+    <div class="card-actions">
+      <button class="btn-details" [routerLink]="['/games', game.id]">Detalii</button>
+
+      @if (loginStore.role() === 'ADMIN') {
+        <button class="btn-primary" (click)="onEdit()">Edit</button>
+        <button class="btn-danger" (click)="onDelete()">Delete</button>
+      }
+    </div>
   </div>
 </div>

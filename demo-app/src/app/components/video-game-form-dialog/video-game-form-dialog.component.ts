@@ -21,11 +21,11 @@ export class VideoGameFormDialogComponent {
     title: '',
     price: 0,
     developer: '',
+    coverImageUrl: ''
   };
 
   ngOnInit(): void {
     if (this.gameToEdit) {
-      // If we are editing, copy the existing data into the form!
       this.newGame = {
         title: this.gameToEdit.title,
         developer: this.gameToEdit.developer,

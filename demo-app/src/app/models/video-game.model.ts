@@ -4,4 +4,5 @@ export interface VideoGame {
   title: string;
   price: number;
   developer: string;
+  coverImageUrl?: string;
 }

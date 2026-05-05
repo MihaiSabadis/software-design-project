@@ -1,73 +1,110 @@
 .card-container {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 1.5rem;
-  background-color: #ffffff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+
+  /* 1. Micșorăm lățimea maximă (era 280px) */
+  max-width: 240px;
+  margin: 0 auto;
+
+  background-color: #1c1139;
+  border-radius: 10px; /* Colțuri ușor mai puțin rotunjite pentru un aspect mai "sharp" la dimensiuni mici */
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   height: 100%;
+  color: #ffffff;
 
   &:hover {
     transform: translateY(-5px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
   }
 
-  h3 {
-    margin-top: 0;
-    margin-bottom: 0.5rem;
-    color: #212529;
-    font-size: 1.25rem;
+  /* 2. Reducem zona imaginii (era 320px) */
+  .game-cover-container {
+    width: 100%;
+    height: 240px;
+    background-color: #120b29;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
   }
 
-  .developer {
-    margin: 0;
-    color: #6c757d;
-    font-size: 0.9rem;
-  }
-}
-
-.card-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid #f1f3f5;
-
-  .price {
-    font-size: 1.25rem;
-    color: #2e7d32;
-    font-weight: bold;
-    margin: 0;
+  .card-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1rem; /* Reducem padding-ul interior (era 1.25rem) */
+    flex-grow: 1;
   }
 
-  .btn-primary {
-    background-color: #ffc107;
-    color: black;
-    border: none;
-    padding: 0.4rem 0.8rem;
-    border-radius: 4px;
-    cursor: pointer;
+  .card-info {
+    margin-bottom: 0.75rem;
+
+    h3 {
+      margin: 0 0 0.3rem 0;
+      font-size: 1.1rem; /* Text mai mic (era 1.2rem) */
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .developer {
+      margin: 0;
+      color: #00d6a0;
+      font-size: 0.75rem; /* Text mai mic (era 0.9rem) */
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
   }
 
-  .btn-details {
-    background-color: #4423bb;
-    color: #fffdfd;
-    border: none;
-    padding: 0.4rem 0.8rem;
-    border-radius: 4px;
-    cursor: pointer;
+  .card-price-section {
+    margin-bottom: 1rem;
+
+    .price-label {
+      display: block;
+      color: #a497c6;
+      font-size: 0.75rem; /* Text mai mic (era 0.85rem) */
+      margin-bottom: 0;
+      font-weight: 600;
+    }
+
+    .price {
+      font-size: 1.4rem; /* Preț mai mic (era 1.7rem) */
+      color: #ffffff;
+      font-weight: 800;
+      margin: 0;
+    }
   }
 
-  .btn-danger{
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    padding: 0.4rem 0.8rem;
-    border-radius: 4px;
-    cursor: pointer;
+  .card-actions {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+
+    button {
+      flex: 1;
+      padding: 0.5rem 0; /* Butoane mai subțiri (era 0.6rem) */
+      font-size: 0.85rem; /* Text butoane mai mic */
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-details {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-primary { background-color: #ffc107; color: #000000; }
+    .btn-danger { background-color: #dc3545; color: #ffffff; }
   }
 }
