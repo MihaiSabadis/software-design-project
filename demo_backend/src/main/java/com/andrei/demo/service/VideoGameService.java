@@ -1,7 +1,7 @@
 package com.andrei.demo.service;
 
 import com.andrei.demo.model.VideoGame;
-import com.andrei.demo.model.VideoGameCreateDTO;
+import com.andrei.demo.model.dto.VideoGameCreateDTO;
 import com.andrei.demo.repository.VideoGameRepository;
 import jakarta.validation.ValidationException;
 import lombok.AllArgsConstructor;

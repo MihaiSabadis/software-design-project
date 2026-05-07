@@ -2,7 +2,7 @@ package com.andrei.demo.controller;
 
 import com.andrei.demo.model.LoginRequest;
 import com.andrei.demo.model.LoginResponse;
-import com.andrei.demo.model.PersonCreateDTO;
+import com.andrei.demo.model.dto.PersonCreateDTO;
 import com.andrei.demo.service.PersonService;
 import com.andrei.demo.service.SecurityService;
 import jakarta.validation.Valid;

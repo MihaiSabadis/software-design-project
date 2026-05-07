@@ -6,10 +6,10 @@ import {LoginStore} from "../../features/login/login.store";
 @Component({
   selector: 'app-video-game-card',
   imports: [RouterLink],
-  templateUrl: './video-game-card.component.html',
-  styleUrl: './video-game-card.component.scss',
+  templateUrl: './game-card.component.html',
+  styleUrl: './game-card.component.scss',
 })
-export class VideoGameCardComponent {
+export class GameCardComponent {
   @Input({ required: true }) game!: VideoGame;
 
   readonly loginStore = inject(LoginStore);

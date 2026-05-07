@@ -1,7 +1,9 @@
 package com.andrei.demo.controller;
 
 import com.andrei.demo.model.VideoGame;
-import com.andrei.demo.model.VideoGameCreateDTO;
+import com.andrei.demo.model.dto.GameAnalyticsDTO;
+import com.andrei.demo.model.dto.VideoGameCreateDTO;
+import com.andrei.demo.service.GameAnalyticsService;
 import com.andrei.demo.service.VideoGameService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -20,6 +22,7 @@ import java.util.UUID;
 public class VideoGameController {
 
     private final VideoGameService videoGameService;
+    private final GameAnalyticsService gameAnalyticsService;
 
     @GetMapping
     public List<VideoGame> getVideoGames(
@@ -70,5 +73,11 @@ public class VideoGameController {
     public ResponseEntity<?> deleteVideoGame(@PathVariable UUID uuid) {
         videoGameService.deleteVideoGame(uuid);
         return ResponseEntity.ok("Game deleted successfully");
+    }
+
+    @GetMapping("/{id}/analytics")
+    public ResponseEntity<GameAnalyticsDTO> getGameAnalytics(@PathVariable UUID id) {
+        GameAnalyticsDTO analyticsData = gameAnalyticsService.getAnalyticsForGame(id);
+        return ResponseEntity.ok(analyticsData);
     }
 }

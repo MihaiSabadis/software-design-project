@@ -8,10 +8,10 @@ import { VideoGame } from '../../models/video-game.model';
   selector: 'app-video-game-form-dialog',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './video-game-form-dialog.component.html',
-  styleUrls: ['./video-game-form-dialog.component.scss'],
+  templateUrl: './game-form-dialog.component.html',
+  styleUrls: ['./game-form-dialog.component.scss'],
 })
-export class VideoGameFormDialogComponent {
+export class GameFormDialogComponent {
   @Output() closeDialog = new EventEmitter<void>();
   @Output() saveGame = new EventEmitter<VideoGameCreateDTO>();
 

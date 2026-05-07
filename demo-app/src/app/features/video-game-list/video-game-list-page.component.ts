@@ -3,22 +3,21 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { VideoGameService } from '../../services/video-game.service';
 import { VideoGame } from '../../models/video-game.model';
-import { VideoGameCardComponent } from '../../components/video-game-card/video-game-card.component';
+import { GameCardComponent } from '../../components/video-game-card/game-card.component';
 import { VideoGameCreateDTO } from "../../models/video-game-create.dto";
-import { VideoGameFormDialogComponent } from "../../components/video-game-form-dialog/video-game-form-dialog.component";
+import { GameFormDialogComponent } from "../../components/video-game-form-dialog/game-form-dialog.component";
 import {LoginStore} from "../login/login.store";
 
 @Component({
   selector: 'app-video-game-list-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, VideoGameCardComponent, VideoGameFormDialogComponent], // FormsModule is required for [(ngModel)]
+  imports: [CommonModule, FormsModule, GameCardComponent, GameFormDialogComponent],
   templateUrl: './video-game-list-page.component.html',
   styleUrls: ['./video-game-list-page.component.scss'],
 })
 export class VideoGameListPageComponent implements OnInit {
   games: VideoGame[] = [];
 
-  // State variables bound to the HTML inputs
   developerSearchString: string = '';
   maxPrice: number | null = null;
   titleSearchString: string = '';
@@ -34,7 +33,6 @@ export class VideoGameListPageComponent implements OnInit {
   readonly loginStore = inject(LoginStore);
 
   ngOnInit(): void {
-    // Load all games when the page first opens
     this.loadGames();
   }
 
@@ -48,7 +46,6 @@ export class VideoGameListPageComponent implements OnInit {
   }
 
   loadGames(): void {
-    // Passes the current state variables to your service
     this.videoGameService.getVideoGames(
         this.titleSearchString,
         this.developerSearchString,
@@ -66,7 +63,6 @@ export class VideoGameListPageComponent implements OnInit {
   }
 
   onFilterChange(): void {
-    // Triggered by the "Apply Filters" button
     this.loadGames();
     this.cdr.detectChanges();
   }

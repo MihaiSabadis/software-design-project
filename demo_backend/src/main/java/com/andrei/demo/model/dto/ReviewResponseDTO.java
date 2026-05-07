@@ -1,4 +1,4 @@
-package com.andrei.demo.model;
+package com.andrei.demo.model.dto;
 
 import lombok.Data;
 import java.util.UUID;

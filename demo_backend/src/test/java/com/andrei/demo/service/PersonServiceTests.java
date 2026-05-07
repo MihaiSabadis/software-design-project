@@ -2,7 +2,7 @@ package com.andrei.demo.service;
 
 import com.andrei.demo.config.ValidationException;
 import com.andrei.demo.model.Person;
-import com.andrei.demo.model.PersonCreateDTO;
+import com.andrei.demo.model.dto.PersonCreateDTO;
 import com.andrei.demo.repository.PersonRepository;
 import com.andrei.demo.util.PasswordUtil;
 import org.junit.jupiter.api.AfterEach;

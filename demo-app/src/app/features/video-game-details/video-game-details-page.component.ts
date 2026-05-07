@@ -9,11 +9,12 @@ import { VideoGame } from '../../models/video-game.model';
 import { Review } from '../../models/review.model';
 import { ReviewCreateDTO } from '../../models/review-create.dto';
 import { LoginStore } from '../login/login.store';
+import {GameAnalyticsComponent} from "../../components/game-analytics/game-analytics.component";
 
 @Component({
   selector: 'app-video-game-details-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, GameAnalyticsComponent],
   templateUrl: './video-game-details-page.component.html',
   styleUrls: ['./video-game-details-page.component.scss'],
 })

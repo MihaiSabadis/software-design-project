@@ -18,5 +18,5 @@ public class PriceHistory {
     private VideoGame videoGame;
 
     private Double price;
-    private LocalDate recordedAt; // Data la care a fost valabil acest preț
+    private LocalDate recordedAt;
 }

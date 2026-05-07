@@ -1,7 +1,7 @@
-package com.andrei.demo.model;
+package com.andrei.demo.model.dto;
 
+import com.andrei.demo.model.Role;
 import com.andrei.demo.validator.StrongPassword;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

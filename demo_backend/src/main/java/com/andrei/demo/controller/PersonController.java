@@ -2,7 +2,7 @@ package com.andrei.demo.controller;
 
 import org.springframework.http.ResponseEntity;
 import com.andrei.demo.config.ValidationException;
-import com.andrei.demo.model.PersonCreateDTO;
+import com.andrei.demo.model.dto.PersonCreateDTO;
 import com.andrei.demo.service.PersonService;
 import com.andrei.demo.model.Person;
 import jakarta.validation.Valid;

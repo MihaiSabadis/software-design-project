@@ -1,0 +1,18 @@
+<div class="analytics-container">
+  <div class="header">
+    <h2>Istoric Preț & Update-uri</h2>
+    <p>Analizează corelația dintre lansarea patch-urilor și scăderea prețului.</p>
+  </div>
+
+  <div class="chart-wrapper">
+    @if(isDataLoaded) {
+      <canvas baseChart
+              [type]="'line'"
+              [data]="lineChartData"
+              [options]="lineChartOptions">
+      </canvas>
+    } @else {
+      <p style="text-align: center; color: #a497c6; padding-top: 2rem;">Încărcare date analitice...</p>
+    }
+  </div>
+</div>

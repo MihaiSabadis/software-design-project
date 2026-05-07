@@ -2,7 +2,7 @@ package com.andrei.demo.service;
 
 import jakarta.validation.ValidationException;
 import com.andrei.demo.model.VideoGame;
-import com.andrei.demo.model.VideoGameCreateDTO;
+import com.andrei.demo.model.dto.VideoGameCreateDTO;
 import com.andrei.demo.repository.VideoGameRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

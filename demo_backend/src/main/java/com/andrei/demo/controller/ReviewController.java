@@ -1,7 +1,7 @@
 package com.andrei.demo.controller;
 
 import com.andrei.demo.config.ValidationException;
-import com.andrei.demo.model.ReviewCreateDTO;
+import com.andrei.demo.model.dto.ReviewCreateDTO;
 import com.andrei.demo.service.ReviewService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;

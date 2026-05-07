@@ -1,4 +1,4 @@
-package com.andrei.demo.model;
+package com.andrei.demo.model.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

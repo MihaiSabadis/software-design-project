@@ -34,8 +34,10 @@ public class VideoGame {
     private List<Person> owners = new ArrayList<>();
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Review> reviews = new ArrayList<>();
 
     @OneToMany(mappedBy = "videoGame", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<GamePatch> patches = new ArrayList<>();
 }

@@ -2,6 +2,8 @@ package com.andrei.demo.service;
 
 import com.andrei.demo.config.ValidationException;
 import com.andrei.demo.model.*;
+import com.andrei.demo.model.dto.ReviewCreateDTO;
+import com.andrei.demo.model.dto.ReviewResponseDTO;
 import com.andrei.demo.repository.ReviewRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;

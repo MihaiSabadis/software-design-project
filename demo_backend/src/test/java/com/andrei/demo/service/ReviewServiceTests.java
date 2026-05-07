@@ -3,7 +3,7 @@ package com.andrei.demo.service;
 import com.andrei.demo.config.ValidationException;
 import com.andrei.demo.model.Person;
 import com.andrei.demo.model.Review;
-import com.andrei.demo.model.ReviewCreateDTO;
+import com.andrei.demo.model.dto.ReviewCreateDTO;
 import com.andrei.demo.model.VideoGame;
 import com.andrei.demo.repository.ReviewRepository;
 import org.junit.jupiter.api.AfterEach;
