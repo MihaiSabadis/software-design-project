@@ -19,4 +19,6 @@ public class VideoGameCreateDTO {
     @NotNull(message = "Price is required")
     @Min(value = 0, message = "Price cannot be negative")
     private Double price;
+
+
 }

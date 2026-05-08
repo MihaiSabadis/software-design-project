@@ -1,10 +1,13 @@
 package com.andrei.demo.service;
 
+import com.andrei.demo.model.Person;
 import com.andrei.demo.model.Studio;
 import com.andrei.demo.model.VideoGame;
 import com.andrei.demo.model.dto.VideoGameCreateDTO;
+import com.andrei.demo.repository.PersonRepository;
 import com.andrei.demo.repository.StudioRepository;
 import com.andrei.demo.repository.VideoGameRepository;
+import jakarta.transaction.Transactional;
 import jakarta.validation.ValidationException;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -20,7 +23,9 @@ import java.util.UUID;
 public class VideoGameService {
 
     private final VideoGameRepository videoGameRepository;
-    private final StudioRepository studioRepository; // <-- Adăugat pentru a putea lucra cu Studiouri
+    private final StudioRepository studioRepository;
+    private final PersonRepository personRepository;
+
 
     public List<VideoGame> getAllVideoGames() {
         return videoGameRepository.findAll();
@@ -59,13 +64,26 @@ public class VideoGameService {
         return videoGameRepository.save(videoGame);
     }
 
-    public VideoGame updateVideoGame(UUID id, VideoGame videoGame) throws ValidationException {
-        Optional<VideoGame> videoGameOptional = videoGameRepository.findById(id);
+    public VideoGame updateVideoGame(UUID gameId,UUID moderatorId, VideoGame videoGame) throws ValidationException {
+        Optional<VideoGame> videoGameOptional = videoGameRepository.findById(gameId);
+        Optional<Person> moderatorOptional = personRepository.findById(moderatorId);
+
+
 
         if(videoGameOptional.isEmpty()) {
-            throw new ValidationException("Video Game with ID " + id + " not found.");
+            throw new ValidationException("Video Game with ID " + gameId + " not found.");
         }
         VideoGame existingVideoGame = videoGameOptional.get();
+
+        if(moderatorOptional.isEmpty()) {
+            throw new ValidationException("Person with ID " + moderatorId + " not found.");
+        }
+        Person existingModerator = moderatorOptional.get();
+
+
+        if (!existingVideoGame.getStudio().getId().equals(existingModerator.getStudio().getId())) {
+            throw new ValidationException("You do not have permission to edit games for this studio.");
+        }
 
         existingVideoGame.setTitle(videoGame.getTitle());
         existingVideoGame.setPrice(videoGame.getPrice());
@@ -114,11 +132,21 @@ public class VideoGameService {
         videoGameRepository.save(existingVideoGame);
     }
 
-    public void deleteVideoGame(UUID id) throws ValidationException {
-        if(!videoGameRepository.existsById(id)) {
-            throw new ValidationException("Cannot delete. Video Game with ID " + id + " not found.");
+    @Transactional
+    public void deleteVideoGame(UUID gameId) throws ValidationException {
+        if(!videoGameRepository.existsById(gameId)) {
+            throw new ValidationException("Cannot delete. Video Game with ID " + gameId + " not found.");
         }
-        videoGameRepository.deleteById(id);
+
+        VideoGame game = videoGameRepository.findById(gameId).orElseThrow();
+
+        // 1. Remove the game from all players' libraries to prevent foreign key errors
+        for (Person owner : game.getOwners()) {
+            owner.getOwnedGames().remove(game);
+            personRepository.save(owner);
+        }
+
+        videoGameRepository.deleteById(gameId);
     }
 
     public List<VideoGame> getFilteredVideoGames(String title, String studioName, Double maxPrice, String sortBy, String sortDir) {

@@ -1,6 +1,8 @@
 package com.andrei.demo.repository;
 
+import com.andrei.demo.model.Person;
 import com.andrei.demo.model.Review;
+import com.andrei.demo.model.VideoGame;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,4 +15,6 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
     boolean existsByAuthorIdAndGameId(UUID authorId, UUID gameId);
 
     List<Review> findByGameId(UUID gameId);
+
+    boolean existsByAuthorAndGame(Person person, VideoGame game);
 }

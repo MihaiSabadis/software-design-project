@@ -2,9 +2,13 @@ package com.andrei.demo.service;
 
 import com.andrei.demo.config.ValidationException;
 import com.andrei.demo.model.Person;
+import com.andrei.demo.model.Role;
+import com.andrei.demo.model.Studio;
 import com.andrei.demo.model.dto.PersonCreateDTO;
 import com.andrei.demo.model.VideoGame;
 import com.andrei.demo.repository.PersonRepository;
+import com.andrei.demo.repository.ReviewRepository;
+import com.andrei.demo.repository.StudioRepository;
 import com.andrei.demo.util.PasswordUtil;
 import com.andrei.demo.repository.VideoGameRepository;
 import jakarta.transaction.Transactional;
@@ -21,6 +25,8 @@ public class PersonService {
     private final PersonRepository personRepository;
     private final VideoGameRepository videoGameRepository;
     private final PasswordUtil passwordUtil;
+    private final StudioRepository studioRepository;
+    private final ReviewRepository reviewRepository;
 
     private final EmailService emailService;
 
@@ -42,6 +48,18 @@ public class PersonService {
         person.setEmail(personDTO.getEmail());
         String hashedPassword = passwordUtil.hashPassword(personDTO.getPassword());
         person.setPassword(hashedPassword);
+
+        //link moderator(if) to studio
+        if (personDTO.getRole() == Role.MODERATOR) {
+            if (personDTO.getStudioCode() == null || personDTO.getStudioCode().isBlank()) {
+                throw new ValidationException("Moderators must provide a valid studio code.");
+            }
+            Studio studio = studioRepository.findByRegistrationCode(personDTO.getStudioCode())
+                    .orElseThrow(() -> new ValidationException("Invalid studio code!"));
+            person.setStudio(studio);
+        } else if (personDTO.getRole() == Role.PLAYER) {
+            person.setStudio(null);
+        }
 
         return personRepository.save(person);
     }
@@ -95,6 +113,26 @@ public class PersonService {
         }
 
         person.getOwnedGames().add(game);
+        return personRepository.save(person);
+    }
+
+    @Transactional
+    public Person removeGameToLibrary(UUID personId, UUID gameId) throws ValidationException {
+        Person person = personRepository.findById(personId)
+                .orElseThrow(() -> new ValidationException("Person with ID " + personId + " not found"));
+
+        VideoGame game = videoGameRepository.findById(gameId)
+                .orElseThrow(() -> new ValidationException("Game with ID " + gameId + " not found"));
+
+        if(!person.getOwnedGames().contains(game)) {
+            throw new ValidationException("Game not owned by the person " + person);
+        }
+
+        if (reviewRepository.existsByAuthorAndGame(person, game)) {
+            throw new ValidationException("Cannot remove game from library. Please delete your review first.");
+        }
+
+        person.getOwnedGames().remove(game);
         return personRepository.save(person);
     }
 

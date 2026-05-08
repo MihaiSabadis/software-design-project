@@ -29,4 +29,15 @@ public class Studio {
     @OneToMany(mappedBy = "studio", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<VideoGame> games = new ArrayList<>();
+
+    @Column(name = "registration_code", unique = true)
+    private String registrationCode;
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.registrationCode == null) {
+            // Generates a random 8-character alphanumeric code
+            this.registrationCode = java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        }
+    }
 }

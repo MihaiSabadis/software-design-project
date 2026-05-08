@@ -10,4 +10,6 @@ import java.util.UUID;
 @Repository
 public interface StudioRepository extends JpaRepository<Studio, UUID> {
     Optional<Studio> findByName(String name);
+
+    Optional<Studio> findByRegistrationCode(String studioCode);
 }
