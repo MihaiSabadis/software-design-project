@@ -7,14 +7,12 @@
     >
   </div>
 
-  <!-- Bottom Section: Dark Purple Info Area -->
   <div class="card-content">
     <div class="card-info">
       <h3>{{ game.title }}</h3>
-      <p class="developer">{{ game.developer || 'Unknown' }}</p>
+      <p class="studio-name">{{ game.studio.name || 'Unknown' }}</p>
     </div>
 
-    <!-- Pricing Area matching Eneba -->
     <div class="card-price-section">
       <span class="price-label">De la</span>
       <p class="price">${{ game.price }}</p>

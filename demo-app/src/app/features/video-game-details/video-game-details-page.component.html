@@ -6,7 +6,7 @@
     <section class="hero-section">
       <h1>{{ game.title }}</h1>
       <p class="game-meta">
-        Developer: {{ game.developer }} | Price: ${{ game.price }}
+        Studio: {{ game?.studio?.name }} | Price: ${{ game.price }}
       </p>
 
       @if (isOwned) {

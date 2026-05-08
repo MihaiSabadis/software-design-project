@@ -20,8 +20,9 @@ public class VideoGame {
     @Column(name = "title", nullable = false, unique = true)
     private String title="";
 
-    @Column(name = "developer",  nullable = false)
-    private String developer="";
+    @ManyToOne
+    @JoinColumn(name = "studio_id", nullable = false)
+    private Studio studio;
 
     @Column(name = "price", nullable = false)
     private Double price=0.0;

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import java.util.UUID;
 
 @Data
 public class VideoGameCreateDTO {
@@ -12,10 +13,7 @@ public class VideoGameCreateDTO {
     @NotBlank(message = "Title is required")
     private String title;
 
-    @NotBlank(message = "Developer is required")
-    private String developer;
-
-    @Size(max = 1000, message = "URL-ul imaginii este prea lung")
+    @Size(max = 1000, message = "URL of the image too long")
     private String coverImageUrl;
 
     @NotNull(message = "Price is required")

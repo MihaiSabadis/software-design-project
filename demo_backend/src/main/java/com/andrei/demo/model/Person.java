@@ -47,4 +47,8 @@ public class Person {
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> writtenReviews =  new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "studio_id")
+    private Studio studio;
 }

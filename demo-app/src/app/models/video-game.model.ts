@@ -1,8 +1,9 @@
+import {Studio} from './studio-model';
 
 export interface VideoGame {
   id?: string;
   title: string;
   price: number;
-  developer: string;
+  studio: Studio;
   coverImageUrl?: string;
 }

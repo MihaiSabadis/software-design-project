@@ -27,15 +27,15 @@ public class VideoGameController {
     @GetMapping
     public List<VideoGame> getVideoGames(
             @RequestParam(required = false) String title,
-            @RequestParam(required = false) String developer,
+            @RequestParam(required = false) String studioName,
             @RequestParam(required = false) Double maxPrice,
             @RequestParam(defaultValue = "title") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDir) {
 
-        if (maxPrice == null && developer == null && title == null) {
+        if (maxPrice == null && studioName == null && title == null) {
             return videoGameService.getAllVideoGames();
         } else {
-            return videoGameService.getFilteredVideoGames(title, developer, maxPrice, sortBy, sortDir);
+            return videoGameService.getFilteredVideoGames(title, studioName, maxPrice, sortBy, sortDir);
         }
     }
 
@@ -49,26 +49,28 @@ public class VideoGameController {
         return videoGameService.getVideoGameByTitle(title);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    // Acum permitem și MODERATORILOR să adauge jocuri noi
+    @PreAuthorize("hasRole('MODERATOR')")
     @PostMapping
     public ResponseEntity<?> addVideoGame(@Valid @RequestBody VideoGameCreateDTO gameDTO) {
         return ResponseEntity.ok(videoGameService.addVideoGame(gameDTO));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    // Permitem MODERATORILOR să editeze
+    @PreAuthorize("hasRole('MODERATOR')")
     @PutMapping("/{uuid}")
     public ResponseEntity<?> updateVideoGame(@PathVariable UUID uuid, @RequestBody VideoGame game) {
         return ResponseEntity.ok(videoGameService.updateVideoGame(uuid, game));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MODERATOR')")
     @PatchMapping("/{uuid}")
     public ResponseEntity<String> patchVideoGame(@PathVariable UUID uuid, @RequestBody Map<String, Object> updates) {
         videoGameService.patchVideoGame(uuid, updates);
         return ResponseEntity.ok("Game patched successfully");
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MODERATOR')")
     @DeleteMapping("/{uuid}")
     public ResponseEntity<?> deleteVideoGame(@PathVariable UUID uuid) {
         videoGameService.deleteVideoGame(uuid);
