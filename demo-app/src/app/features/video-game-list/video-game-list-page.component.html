@@ -1,60 +1,57 @@
 <div class="games-container">
   <header>
     <h1>Video Games</h1>
-    @if (loginStore.role() === 'ADMIN') {
+    @if (canAddGame) {
       <button class="btn-primary" (click)="openDialog()">+ Add New Game</button>
     }
   </header>
 
   <section class="filters-section">
     <div class="filter-group">
-      <label for="title">Search Title:</label>
-      <input type="text" id="title" [(ngModel)]="titleSearchString" placeholder="e.g. Mario">
+      <label for="title">Search Title</label>
+      <input type="text" id="title"
+             [(ngModel)]="titleSearchString"
+             placeholder="e.g. Mario" />
     </div>
 
     <div class="filter-group">
-      <label for="developer">Developer:</label>
-      <input
-        type="text"
-        id="developer"
-        [(ngModel)]="developerSearchString"
-        placeholder="e.g. Valve"
-      >
+      <label for="developer">Studio Name</label>
+      <input type="text" id="developer"
+             [(ngModel)]="developerSearchString"
+             placeholder="e.g. Valve" />
     </div>
 
     <div class="filter-group">
-      <label for="maxPrice">Max Price ($):</label>
-      <input
-        type="number"
-        id="maxPrice"
-        [(ngModel)]="maxPrice"
-        placeholder="e.g. 50"
-      >
+      <label for="maxPrice">Max Price ($)</label>
+      <input type="number" id="maxPrice"
+             [(ngModel)]="maxPrice"
+             placeholder="e.g. 50" />
     </div>
 
     <div class="filter-group">
-      <label>Sort By:</label>
-      <select [(ngModel)]="sortBy" style="padding: 0.5rem; border-radius: 4px; border: 1px solid #ccc;">
+      <label>Sort By</label>
+      <select [(ngModel)]="sortBy">
         <option value="title">Title</option>
         <option value="price">Price</option>
       </select>
     </div>
 
     <div class="filter-group">
-      <label>Direction:</label>
-      <select [(ngModel)]="sortDir" style="padding: 0.5rem; border-radius: 4px; border: 1px solid #ccc;">
-        <option value="asc">Ascending (A-Z / Low-High)</option>
-        <option value="desc">Descending (Z-A / High-Low)</option>
+      <label>Direction</label>
+      <select [(ngModel)]="sortDir">
+        <option value="asc">Ascending</option>
+        <option value="desc">Descending</option>
       </select>
     </div>
 
-    <button class="btn-primary" (click)="onFilterChange()">Apply Filters</button>
+    <button class="btn-primary" (click)="onFilterChange()">Apply</button>
   </section>
 
   <section class="games-grid">
-    @for (game of games; track game.title) {
+    @for (game of games(); track game.id) {
       <app-video-game-card
         [game]="game"
+        [moderatorStudioId]="moderatorStudio()?.id ?? null"
         (deleteClick)="handleDeleteGame($event)"
         (editClick)="handleEditGame($event)">
       </app-video-game-card>
@@ -66,9 +63,10 @@
   </section>
 </div>
 
-@if (isDialogOpen){
+@if (isDialogOpen()) {
   <app-video-game-form-dialog
-    [gameToEdit]="gameBeingEdited"
+    [gameToEdit]="gameBeingEdited()"
+    [moderatorStudio]="moderatorStudio()"
     (closeDialog)="closeDialog()"
     (saveGame)="handleSaveGame($event)">
   </app-video-game-form-dialog>

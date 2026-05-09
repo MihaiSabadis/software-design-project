@@ -1,10 +1,12 @@
-import {ChangeDetectionStrategy, Component, DestroyRef, effect, inject} from '@angular/core';
+// Remove MatToolbar from imports array, add RouterLink for the studios button
+import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
-import { MatToolbar } from '@angular/material/toolbar';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { ConfirmDeleteDialogComponent } from '../../components/confirm-delete-dialog/confirm-delete-dialog.component';
 import {
   PersonFormDialogComponent,
@@ -13,14 +15,11 @@ import {
 } from '../../components/person-form-dialog/person-form-dialog.component';
 import { CreatePersonDto, Person, UpdatePersonDto } from '../../models/person.model';
 import { PersonListStore } from './person-list.store';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
-import { LoginStore } from '../login/login.store'
-
+import { LoginStore } from '../login/login.store';
 
 @Component({
   selector: 'app-person-list-page',
-  imports: [MatTableModule, MatButtonModule, MatIconModule, MatDialogModule, MatToolbar],
+  imports: [MatTableModule, MatButtonModule, MatIconModule, MatDialogModule],
   templateUrl: './person-list-page.component.html',
   styleUrl: './person-list-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -30,8 +29,8 @@ export class PersonListPageComponent {
   private readonly snackBar = inject(MatSnackBar);
   private readonly store = inject(PersonListStore);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly loginStore = inject (LoginStore);
-  private readonly router = inject (Router);
+  private readonly loginStore = inject(LoginStore);
+  private readonly router = inject(Router);
 
   protected readonly persons = this.store.persons;
   protected readonly hasError = this.store.hasError;
@@ -42,27 +41,18 @@ export class PersonListPageComponent {
     this.store.load();
 
     effect(() => {
-      const errorMessage = this.hasError();
-
-      if (errorMessage) {
-        this.snackBar.open(errorMessage, 'Got it', {
+      const msg = this.hasError();
+      if (msg) {
+        this.snackBar.open(msg, 'Got it', {
           duration: 5000,
-          panelClass: ['error-snackbar'] // gives it a class for red CSS
+          panelClass: ['error-snackbar'],
         });
       }
     });
   }
 
-  protected logout(): void {
-    this.loginStore.logout();
-    void this.router.navigate(['/login']);
-  }
-
   protected openCreateDialog(): void {
-    if (this.isLoading()) {
-      return;
-    }
-
+    if (this.isLoading()) return;
     this.dialog
       .open<PersonFormDialogComponent, PersonFormDialogData, PersonFormDialogResult>(
         PersonFormDialogComponent,
@@ -77,10 +67,7 @@ export class PersonListPageComponent {
   }
 
   protected openEditDialog(person: Person): void {
-    if (this.isLoading()) {
-      return;
-    }
-
+    if (this.isLoading()) return;
     this.dialog
       .open<PersonFormDialogComponent, PersonFormDialogData, PersonFormDialogResult>(
         PersonFormDialogComponent,
@@ -95,10 +82,7 @@ export class PersonListPageComponent {
   }
 
   protected openDeleteDialog(person: Person): void {
-    if (this.isLoading()) {
-      return;
-    }
-
+    if (this.isLoading()) return;
     this.dialog
       .open<ConfirmDeleteDialogComponent, { person: Person }, boolean>(
         ConfirmDeleteDialogComponent,

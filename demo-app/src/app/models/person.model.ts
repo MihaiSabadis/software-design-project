@@ -1,4 +1,5 @@
 import { VideoGame } from './video-game.model';
+import { Studio } from './studio-model';
 
 export interface Person {
   id: string;
@@ -6,7 +7,8 @@ export interface Person {
   age: number;
   email: string;
   password: string;
-  role: 'ADMIN' | 'PLAYER';
+  role: 'ADMIN' | 'PLAYER' | 'MODERATOR';
+  studio?: Studio
   ownedGames?: VideoGame[];
 }
 

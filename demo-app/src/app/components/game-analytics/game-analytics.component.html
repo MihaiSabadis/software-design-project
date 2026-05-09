@@ -1,18 +1,77 @@
 <div class="analytics-container">
-  <div class="header">
-    <h2>Istoric Preț & Update-uri</h2>
-    <p>Analizează corelația dintre lansarea patch-urilor și scăderea prețului.</p>
+
+  <div class="section-header">
+    <h2>Price History</h2>
+    <p>Price over time vs. patch releases</p>
   </div>
 
   <div class="chart-wrapper">
-    @if(isDataLoaded) {
+    @if (isChartLoaded()) {
       <canvas baseChart
               [type]="'line'"
               [data]="lineChartData"
               [options]="lineChartOptions">
       </canvas>
     } @else {
-      <p style="text-align: center; color: #a497c6; padding-top: 2rem;">Încărcare date analitice...</p>
+      <div class="chart-placeholder">
+        <span class="loading-dot"></span>
+        Loading chart...
+      </div>
     }
   </div>
+
+  @if (isExternalLoaded()) {
+    @if (externalData(); as ext) {
+
+      <!-- Stats row -->
+      <div class="stats-row">
+        @if (ext.metacriticScore) {
+          <div class="stat-chip metacritic">
+            <span class="chip-label">Metacritic</span>
+            <span class="chip-value">{{ ext.metacriticScore }}</span>
+          </div>
+        }
+        @if (ext.steamRating) {
+          <div class="stat-chip steam">
+            <span class="chip-label">Steam</span>
+            <span class="chip-value">{{ ext.steamRating }}</span>
+          </div>
+        }
+        @if (ext.cheapestPriceEver) {
+          <div class="stat-chip low">
+            <span class="chip-label">All-time Low</span>
+            <span class="chip-value">${{ ext.cheapestPriceEver }}</span>
+            @if (ext.cheapestPriceDateEpoch) {
+              <span class="chip-sub">{{ epochToDate(ext.cheapestPriceDateEpoch) }}</span>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Current deals -->
+      @if (ext.currentDeals.length) {
+        <div class="deals-section">
+          <h3>Buy Now</h3>
+          <div class="deals-grid">
+            @for (deal of ext.currentDeals; track deal.storeName) {
+              <a class="deal-tile" [href]="deal.dealUrl" target="_blank" rel="noopener">
+                <span class="store">{{ deal.storeName }}</span>
+                <span class="current-price">${{ deal.price }}</span>
+                <div class="deal-bottom">
+                  @if (+deal.savingsPercent > 0) {
+                    <span class="savings">-{{ deal.savingsPercent }}%</span>
+                  }
+                  <span class="original">${{ deal.retailPrice }}</span>
+                </div>
+              </a>
+            }
+          </div>
+        </div>
+      }
+
+    }
+  } @else {
+    <p class="loading-inline">Fetching live prices...</p>
+  }
+
 </div>

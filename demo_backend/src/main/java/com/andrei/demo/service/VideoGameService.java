@@ -1,3 +1,4 @@
+// demo_backend/src/main/java/com/andrei/demo/service/VideoGameService.java
 package com.andrei.demo.service;
 
 import com.andrei.demo.model.Person;
@@ -11,11 +12,11 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.ValidationException;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -26,121 +27,107 @@ public class VideoGameService {
     private final StudioRepository studioRepository;
     private final PersonRepository personRepository;
 
+    // ── Shared helper ────────────────────────────────────────────────────────
+
+    /**
+     * Returns the authenticated moderator, or null if the caller is an admin.
+     * Throws if a moderator tries to touch a game that isn't their studio's.
+     */
+    private Person getModeratorIfApplicable() {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) return null;
+
+        boolean isModerator = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_MODERATOR"));
+        if (!isModerator) return null;
+
+        String principalId = (String) auth.getPrincipal();
+        return personRepository.findById(UUID.fromString(principalId))
+                .orElseThrow(() -> new ValidationException("Moderator not found."));
+    }
+
+    private void assertModeratorOwnsGame(Person moderator, VideoGame game) {
+        if (moderator == null) return; // admin — no restriction
+        if (moderator.getStudio() == null
+                || !moderator.getStudio().getId().equals(game.getStudio().getId())) {
+            throw new ValidationException(
+                    "You can only manage games that belong to your studio.");
+        }
+    }
+
+    // ── CRUD ─────────────────────────────────────────────────────────────────
 
     public List<VideoGame> getAllVideoGames() {
         return videoGameRepository.findAll();
     }
 
-    public VideoGame getVideoGameById(UUID id) throws ValidationException {
+    public VideoGame getVideoGameById(UUID id) {
         return videoGameRepository.findById(id)
-                .orElseThrow(()->new ValidationException("Video Game with ID " + id + " not found."));
+                .orElseThrow(() -> new ValidationException(
+                        "Video Game with ID " + id + " not found."));
     }
 
-    public VideoGame getVideoGameByTitle(String title) throws ValidationException {
+    public VideoGame getVideoGameByTitle(String title) {
         return videoGameRepository.findByTitle(title)
-                .orElseThrow(()->new ValidationException("Video Game with title " + title + " not found."));
+                .orElseThrow(() -> new ValidationException(
+                        "Video Game with title " + title + " not found."));
     }
 
-    public VideoGame addVideoGame(VideoGameCreateDTO videoGameDTO){
-
-        if (videoGameRepository.existsByTitle(videoGameDTO.getTitle())) {
-            throw new ValidationException("A video game with this title already exists!");
+    public VideoGame addVideoGame(VideoGameCreateDTO dto) {
+        if (videoGameRepository.existsByTitle(dto.getTitle())) {
+            throw new ValidationException("A video game with this title already exists.");
         }
 
-        VideoGame videoGame = new VideoGame();
-        videoGame.setTitle(videoGameDTO.getTitle());
-        videoGame.setPrice(videoGameDTO.getPrice());
-        videoGame.setCoverImageUrl(videoGameDTO.getCoverImageUrl()); // Asigură-te că pui și imaginea dacă o ai în DTO
+        Studio studio = studioRepository.findById(dto.getStudioId())
+                .orElseThrow(() -> new ValidationException(
+                        "Studio with ID " + dto.getStudioId() + " not found."));
 
-        // --- LOGICA NOUĂ PENTRU STUDIO ---
-        if (videoGameDTO.getStudioId() != null) {
-            Studio studio = studioRepository.findById(videoGameDTO.getStudioId())
-                    .orElseThrow(() -> new ValidationException("Studio with ID " + videoGameDTO.getStudioId() + " not found!"));
-            videoGame.setStudio(studio);
-        } else {
-            throw new ValidationException("A video game must belong to a Studio!");
-        }
+        // Moderator must belong to the chosen studio
+        Person moderator = getModeratorIfApplicable();
+        assertModeratorOwnsGame(moderator,
+                buildGameWithStudio(studio)); // reuse studio check
 
-        return videoGameRepository.save(videoGame);
+        VideoGame game = new VideoGame();
+        game.setTitle(dto.getTitle());
+        game.setPrice(dto.getPrice());
+        game.setCoverImageUrl(dto.getCoverImageUrl());
+        game.setStudio(studio);
+
+        return videoGameRepository.save(game);
     }
 
-    public VideoGame updateVideoGame(UUID gameId,UUID moderatorId, VideoGame videoGame) throws ValidationException {
-        Optional<VideoGame> videoGameOptional = videoGameRepository.findById(gameId);
-        Optional<Person> moderatorOptional = personRepository.findById(moderatorId);
+    // Accepts DTO — same shape the frontend sends for both create and update
+    public VideoGame updateVideoGame(UUID gameId, VideoGameCreateDTO dto) {
+        VideoGame existing = videoGameRepository.findById(gameId)
+                .orElseThrow(() -> new ValidationException(
+                        "Video Game with ID " + gameId + " not found."));
 
+        Person moderator = getModeratorIfApplicable();
+        assertModeratorOwnsGame(moderator, existing);
 
+        existing.setTitle(dto.getTitle());
+        existing.setPrice(dto.getPrice());
+        existing.setCoverImageUrl(dto.getCoverImageUrl());
 
-        if(videoGameOptional.isEmpty()) {
-            throw new ValidationException("Video Game with ID " + gameId + " not found.");
-        }
-        VideoGame existingVideoGame = videoGameOptional.get();
-
-        if(moderatorOptional.isEmpty()) {
-            throw new ValidationException("Person with ID " + moderatorId + " not found.");
-        }
-        Person existingModerator = moderatorOptional.get();
-
-
-        if (!existingVideoGame.getStudio().getId().equals(existingModerator.getStudio().getId())) {
-            throw new ValidationException("You do not have permission to edit games for this studio.");
+        // Studio change only allowed for admins
+        if (dto.getStudioId() != null && moderator == null) {
+            studioRepository.findById(dto.getStudioId())
+                    .ifPresent(existing::setStudio);
         }
 
-        existingVideoGame.setTitle(videoGame.getTitle());
-        existingVideoGame.setPrice(videoGame.getPrice());
-        existingVideoGame.setCoverImageUrl(videoGame.getCoverImageUrl());
-
-        if (videoGame.getStudio() != null) {
-            existingVideoGame.setStudio(videoGame.getStudio());
-        }
-
-        return videoGameRepository.save(existingVideoGame);
-    }
-
-    public void patchVideoGame(UUID uuid, Map<String, Object> updates){
-        VideoGame existingVideoGame = videoGameRepository.findById(uuid)
-                .orElseThrow(()-> new ValidationException("Video Game not found."));
-
-        if(updates.containsKey("title")){
-            String newTitle = (String) updates.get("title");
-
-            if(!existingVideoGame.getTitle().equals(newTitle) && videoGameRepository.existsByTitle(newTitle)){
-                throw new ValidationException("Title already exists.");
-            }
-            existingVideoGame.setTitle(newTitle);
-        }
-
-        if(updates.containsKey("studioId")){
-            String studioIdStr = (String) updates.get("studioId");
-            if(studioIdStr != null && !studioIdStr.trim().isEmpty()){
-                UUID newStudioId = UUID.fromString(studioIdStr);
-                Studio newStudio = studioRepository.findById(newStudioId)
-                        .orElseThrow(() -> new ValidationException("Studio not found."));
-                existingVideoGame.setStudio(newStudio);
-            } else {
-                throw new ValidationException("Studio ID cannot be empty.");
-            }
-        }
-
-        if (updates.containsKey("price")){
-            existingVideoGame.setPrice(((Number) updates.get("price")).doubleValue());
-        }
-
-        if (updates.containsKey("coverImageUrl")){
-            existingVideoGame.setCoverImageUrl((String) updates.get("coverImageUrl"));
-        }
-
-        videoGameRepository.save(existingVideoGame);
+        return videoGameRepository.save(existing);
     }
 
     @Transactional
-    public void deleteVideoGame(UUID gameId) throws ValidationException {
-        if(!videoGameRepository.existsById(gameId)) {
-            throw new ValidationException("Cannot delete. Video Game with ID " + gameId + " not found.");
-        }
+    public void deleteVideoGame(UUID gameId) {
+        VideoGame game = videoGameRepository.findById(gameId)
+                .orElseThrow(() -> new ValidationException(
+                        "Cannot delete. Video Game with ID " + gameId + " not found."));
 
-        VideoGame game = videoGameRepository.findById(gameId).orElseThrow();
+        // Studio check for moderators
+        Person moderator = getModeratorIfApplicable();
+        assertModeratorOwnsGame(moderator, game);
 
-        // 1. Remove the game from all players' libraries to prevent foreign key errors
         for (Person owner : game.getOwners()) {
             owner.getOwnedGames().remove(game);
             personRepository.save(owner);
@@ -149,12 +136,56 @@ public class VideoGameService {
         videoGameRepository.deleteById(gameId);
     }
 
-    public List<VideoGame> getFilteredVideoGames(String title, String studioName, Double maxPrice, String sortBy, String sortDir) {
+    public void patchVideoGame(UUID uuid, Map<String, Object> updates) {
+        VideoGame existing = videoGameRepository.findById(uuid)
+                .orElseThrow(() -> new ValidationException("Video Game not found."));
 
-        Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Person moderator = getModeratorIfApplicable();
+        assertModeratorOwnsGame(moderator, existing);
 
-        String processedTitle = (title == null || title.trim().isEmpty()) ? null : "%" + title.toLowerCase() + "%";
+        if (updates.containsKey("title")) {
+            String newTitle = (String) updates.get("title");
+            if (!existing.getTitle().equals(newTitle)
+                    && videoGameRepository.existsByTitle(newTitle)) {
+                throw new ValidationException("Title already exists.");
+            }
+            existing.setTitle(newTitle);
+        }
+        if (updates.containsKey("price")) {
+            existing.setPrice(((Number) updates.get("price")).doubleValue());
+        }
+        if (updates.containsKey("coverImageUrl")) {
+            existing.setCoverImageUrl((String) updates.get("coverImageUrl"));
+        }
+        // Studio patch only for admin
+        if (updates.containsKey("studioId") && moderator == null) {
+            UUID newStudioId = UUID.fromString((String) updates.get("studioId"));
+            Studio s = studioRepository.findById(newStudioId)
+                    .orElseThrow(() -> new ValidationException("Studio not found."));
+            existing.setStudio(s);
+        }
 
-        return videoGameRepository.searchAndFilterGames(processedTitle, studioName, maxPrice, sort);
+        videoGameRepository.save(existing);
+    }
+
+    public List<VideoGame> getFilteredVideoGames(String title, String studioName,
+                                                 Double maxPrice, String sortBy,
+                                                 String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+        String processedTitle = (title == null || title.isBlank())
+                ? null
+                : "%" + title.toLowerCase() + "%";
+        return videoGameRepository.searchAndFilterGames(
+                processedTitle, studioName, maxPrice, sort);
+    }
+
+    // ── Private helper ───────────────────────────────────────────────────────
+
+    private VideoGame buildGameWithStudio(Studio studio) {
+        VideoGame tmp = new VideoGame();
+        tmp.setStudio(studio);
+        return tmp;
     }
 }

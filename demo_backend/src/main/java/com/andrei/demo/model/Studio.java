@@ -26,7 +26,7 @@ public class Studio {
     @JsonIgnore
     private List<Person> staff = new ArrayList<>();
 
-    @OneToMany(mappedBy = "studio", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "studio", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<VideoGame> games = new ArrayList<>();
 

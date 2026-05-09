@@ -1,86 +1,93 @@
 <main class="login-page" aria-labelledby="register-title">
   <mat-card class="login-card">
-    <h1 id="register-title">Register New Account</h1>
-    <p class="subtitle">Fill in the fields to create your profile.</p>
+    <h1 id="register-title">Create Account</h1>
+    <p class="subtitle">Fill in the details below to get started.</p>
 
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" novalidate>
 
+      <!-- Role selector -->
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Account Type</mat-label>
+        <mat-label>I am a...</mat-label>
         <mat-select formControlName="role" required>
-          <mat-option value="PLAYER">Gamer / Reviewer</mat-option>
-          <mat-option value="ADMIN">Game Developer / Moderator</mat-option>
+          <mat-option value="PLAYER">Player — browse & review games</mat-option>
+          <mat-option value="MODERATOR">Moderator — manage studio games</mat-option>
         </mat-select>
       </mat-form-field>
 
+      <!-- Studio code — only for MODERATOR -->
+      @if (isModerator()) {
+        <div class="studio-code-banner">
+          <span class="banner-icon" aria-hidden="true">🏢</span>
+          <p>You need a studio registration code from an admin to create a moderator account.</p>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Studio Registration Code</mat-label>
+          <input
+            matInput
+            type="text"
+            formControlName="studioCode"
+            autocomplete="off"
+            placeholder="e.g. A3F7C2B1"
+            style="text-transform: uppercase; letter-spacing: 2px;"
+            required
+            aria-describedby="code-errors"
+          />
+          @if (registerForm.controls.studioCode.touched &&
+          registerForm.controls.studioCode.hasError('required')) {
+            <mat-error id="code-errors">Studio code is required.</mat-error>
+          }
+          @if (registerForm.controls.studioCode.touched &&
+          registerForm.controls.studioCode.hasError('minlength')) {
+            <mat-error id="code-errors">Studio code must be at least 6 characters.</mat-error>
+          }
+        </mat-form-field>
+      }
+
+      <!-- Common fields -->
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Name</mat-label>
-        <input
-          matInput
-          type="text"
-          formControlName="name"
-          autocomplete="name"
-          required
-          aria-describedby="name-errors"
-        />
+        <mat-label>Full Name</mat-label>
+        <input matInput formControlName="name" autocomplete="name" required />
         @if (registerForm.controls.name.touched && registerForm.controls.name.hasError('required')) {
-          <mat-error id="name-errors">Name is required.</mat-error>
+          <mat-error>Name is required.</mat-error>
         }
         @if (registerForm.controls.name.touched && registerForm.controls.name.hasError('minlength')) {
-          <mat-error id="name-errors">Name must be at least 2 characters.</mat-error>
+          <mat-error>Name must be at least 2 characters.</mat-error>
         }
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Email</mat-label>
-        <input
-          matInput
-          type="email"
-          formControlName="email"
-          autocomplete="username"
-          required
-          aria-describedby="email-errors"
-        />
+        <input matInput type="email" formControlName="email" autocomplete="username" required />
         @if (registerForm.controls.email.touched && registerForm.controls.email.hasError('required')) {
-          <mat-error id="email-errors">Email is required.</mat-error>
+          <mat-error>Email is required.</mat-error>
         }
         @if (registerForm.controls.email.touched && registerForm.controls.email.hasError('email')) {
-          <mat-error id="email-errors">Please enter a valid email address.</mat-error>
+          <mat-error>Enter a valid email address.</mat-error>
         }
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Age</mat-label>
-        <input
-          matInput
-          type="number"
-          formControlName="age"
-          required
-          aria-describedby="age-errors"
-        />
+        <input matInput type="number" formControlName="age" required />
         @if (registerForm.controls.age.touched && registerForm.controls.age.hasError('required')) {
-          <mat-error id="age-errors">Age is required.</mat-error>
+          <mat-error>Age is required.</mat-error>
         }
         @if (registerForm.controls.age.touched && registerForm.controls.age.hasError('min')) {
-          <mat-error id="age-errors">Age must be a valid number greater than 0.</mat-error>
+          <mat-error>Age must be greater than 0.</mat-error>
         }
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Password</mat-label>
-        <input
-          matInput
-          type="password"
-          formControlName="password"
-          autocomplete="new-password"
-          required
-          aria-describedby="password-errors"
-        />
-        @if (registerForm.controls.password.touched && registerForm.controls.password.hasError('required')) {
-          <mat-error id="password-errors">Password is required.</mat-error>
+        <input matInput type="password" formControlName="password" autocomplete="new-password" required />
+        @if (registerForm.controls.password.touched &&
+        registerForm.controls.password.hasError('required')) {
+          <mat-error>Password is required.</mat-error>
         }
-        @if (registerForm.controls.password.touched && registerForm.controls.password.hasError('minlength')) {
-          <mat-error id="password-errors">Password must be at least 8 characters.</mat-error>
+        @if (registerForm.controls.password.touched &&
+        registerForm.controls.password.hasError('minlength')) {
+          <mat-error>Password must be at least 8 characters.</mat-error>
         }
       </mat-form-field>
 
@@ -89,17 +96,12 @@
       }
 
       <button mat-flat-button color="primary" type="submit" [disabled]="isSubmitting()">
-        @if (isSubmitting()) {
-          Registering...
-        } @else {
-          Register
-        }
+        @if (isSubmitting()) { Creating account... } @else { Create Account }
       </button>
 
-      <div class="login-link" style="text-align: center; margin-top: 1rem;">
-        <p>Already have an account? <a routerLink="/login">Log in</a></p>
+      <div class="login-link">
+        <p>Already have an account? <a routerLink="/login">Sign in</a></p>
       </div>
-
     </form>
   </mat-card>
 </main>

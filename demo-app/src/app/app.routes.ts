@@ -27,6 +27,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'studios',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./features/studio-management/studio-management-page.component').then(
+        (m) => m.StudioManagementPageComponent,
+      ),
+  },
+  {
     path: 'player',
     canActivate: [authGuard],
     loadComponent: () => import('./features/player/player').then((m) => m.Player),

@@ -1,9 +1,18 @@
-import { Component, Input, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnInit,
+  signal,
+  inject,
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartOptions, Chart, registerables } from 'chart.js';
 import annotationPlugin from 'chartjs-plugin-annotation';
-import { VideoGameService } from '../../services/video-game.service'; // Pune calea corectă către serviciul tău
-import { GameAnalytics } from '../../models/game-analytics'; // Pune calea corectă către interfețele de mai sus
+import { VideoGameService } from '../../services/video-game.service';
+import { GameAnalytics } from '../../models/game-analytics';
+import { ExternalGameData } from '../../models/external-game-data.model';
 import 'chartjs-adapter-date-fns';
 
 Chart.register(...registerables, annotationPlugin);
@@ -11,95 +20,135 @@ Chart.register(...registerables, annotationPlugin);
 @Component({
   selector: 'app-game-analytics',
   standalone: true,
-  imports: [BaseChartDirective],
+  imports: [BaseChartDirective, CommonModule],
   templateUrl: './game-analytics.component.html',
   styleUrls: ['./game-analytics.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GameAnalyticsComponent implements OnInit {
-  @Input({ required: true }) gameId!: string | undefined; // Primim ID-ul jocului din exterior
-  private gameService = inject(VideoGameService); // Injectăm serviciul
+  @Input({ required: true }) gameId!: string | undefined;
 
-  public isDataLoaded = false; // Folosim asta ca să nu randăm graficul gol până vin datele
+  private readonly gameService = inject(VideoGameService);
 
-  // Setările graficului (fără date încă)
-  public lineChartData: ChartConfiguration<'line'>['data'] = {
+  isChartLoaded = signal(false);
+  externalData = signal<ExternalGameData | null>(null);
+  isExternalLoaded = signal(false);
+
+  lineChartData: ChartConfiguration<'line'>['data'] = {
     labels: [],
-    datasets: [
-      {
-        data: [],
-        label: 'Preț ($)',
-        fill: true,
-        tension: 0.3,
-        borderColor: '#00d6a0',
-        backgroundColor: 'rgba(0, 214, 160, 0.1)',
-        pointBackgroundColor: '#ffffff',
-      },
-    ],
+    datasets: [{
+      data: [],
+      label: 'Price ($)',
+      fill: true,
+      tension: 0.4,
+      borderColor: '#00d6a0',
+      backgroundColor: 'rgba(0, 214, 160, 0.08)',
+      pointBackgroundColor: '#00d6a0',
+      pointRadius: 4,
+      pointHoverRadius: 6,
+    }],
   };
 
-  // Setările de design (fără adnotări statice)
-  public lineChartOptions: ChartOptions<'line'> = {
+  lineChartOptions: ChartOptions<'line'> = {
     responsive: true,
+    maintainAspectRatio: false,
     color: '#ffffff',
     scales: {
       x: {
-        type: 'time', // ASTA E MAGIA!
-        time: {
-          unit: 'day',
-          tooltipFormat: 'MMM dd, yyyy', // Cum arată data când pui mouse-ul pe ea
-        },
-        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+        type: 'time',
+        time: { unit: 'day', tooltipFormat: 'MMM dd, yyyy' },
+        grid: { color: 'rgba(255,255,255,0.06)' },
+        ticks: { color: '#a497c6' },
       },
-      y: { grid: { color: 'rgba(255, 255, 255, 0.1)' } },
+      y: {
+        grid: { color: 'rgba(255,255,255,0.06)' },
+        ticks: {
+          color: '#a497c6',
+          callback: (v) => '$' + v,
+        },
+      },
     },
     plugins: {
-      legend: { labels: { color: 'white' } },
-      annotation: { annotations: {} }, // Va fi populat dinamic
+      legend: { labels: { color: '#ffffff' } },
+      annotation: { annotations: {} },
     },
   };
 
   ngOnInit() {
     this.gameService.getGameAnalytics(this.gameId).subscribe({
       next: (data: GameAnalytics) => {
-        this.processChartData(data);
-        this.isDataLoaded = true; // Afișăm graficul doar după ce am terminat procesarea
+        this.applyLocalData(data);
+        this.isChartLoaded.set(true);
       },
-      error: (err) => console.error('Eroare la încărcarea datelor de analytics', err),
     });
+
+    if (this.gameId) {
+      this.gameService.getExternalData(this.gameId).subscribe({
+        next: (data) => {
+          this.externalData.set(data);
+          this.isExternalLoaded.set(true);
+          this.applyAllTimeLowAnnotation(data);
+        },
+      });
+    }
   }
 
-  private processChartData(data: GameAnalytics) {
-    // 1. Populăm Axa X (datele) și Axa Y (prețurile)
-    this.lineChartData.labels = [];
-
+  private applyLocalData(data: GameAnalytics) {
     this.lineChartData.datasets[0].data = data.priceHistory.map((p) => ({
       x: p.date,
       y: p.price,
     })) as any;
 
-    // 2. Creăm dinamic adnotările (liniile verticale pentru patch-uri)
-    const dynamicAnnotations: any = {};
-
-    data.patchHistory.forEach((patch, index) => {
-      dynamicAnnotations[`patch${index}`] = {
+    const annotations: any = {};
+    data.patchHistory.forEach((patch, i) => {
+      annotations[`patch${i}`] = {
         type: 'line',
-        xMin: patch.date, // Data unde tragem linia
+        xMin: patch.date,
         xMax: patch.date,
         borderColor: '#ffc107',
         borderWidth: 2,
         borderDash: [5, 5],
         label: {
           display: true,
-          content: patch.version, // Numele versiunii ex: "v1.2"
+          content: patch.version,
           position: 'start',
           backgroundColor: '#ffc107',
-          color: 'black',
-          font: { weight: 'bold' },
+          color: '#000',
+          font: { weight: 'bold', size: 11 },
         },
       };
     });
+    (this.lineChartOptions.plugins!.annotation as any).annotations = annotations;
+  }
 
-    // Punem adnotările în setările graficului
-    this.lineChartOptions.plugins!.annotation!.annotations = dynamicAnnotations;
+  private applyAllTimeLowAnnotation(data: ExternalGameData) {
+    if (!data.cheapestPriceEver) return;
+    const existing =
+      (this.lineChartOptions.plugins!.annotation as any).annotations ?? {};
+
+    existing['allTimeLow'] = {
+      type: 'line',
+      yMin: parseFloat(data.cheapestPriceEver),
+      yMax: parseFloat(data.cheapestPriceEver),
+      borderColor: '#e53935',
+      borderWidth: 1,
+      borderDash: [4, 4],
+      label: {
+        display: true,
+        content: `All-time low: $${data.cheapestPriceEver}`,
+        position: 'end',
+        backgroundColor: '#e53935',
+        color: '#fff',
+        font: { size: 11 },
+      },
+    };
+
+    this.lineChartOptions = { ...this.lineChartOptions };
+  }
+
+  epochToDate(epoch: number): string {
+    return new Date(epoch * 1000).toLocaleDateString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric',
+    });
   }
 }

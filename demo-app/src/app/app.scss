@@ -1,4 +1,6 @@
-/* App shell styles */
-:host {
-  display: block;
+:host { display: block; }
+
+.page-content {
+  padding-top: 52px; // exactly the navbar height
+  min-height: 100dvh;
 }

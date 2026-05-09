@@ -1,3 +1,4 @@
+// demo_backend/src/main/java/com/andrei/demo/util/JwtAuthFilter.java
 package com.andrei.demo.util;
 
 import io.jsonwebtoken.JwtException;
@@ -8,73 +9,77 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.List;
 
 @Component
 @Slf4j
 @AllArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
-    private final JwtUtil jwtUtil;
 
+    private final JwtUtil jwtUtil;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
-        String path = request.getRequestURI();
+                                    @NonNull FilterChain filterChain)
+            throws ServletException, IOException {
+
+        String path   = request.getRequestURI();
         String method = request.getMethod();
+        String authHeader = request.getHeader("Authorization");
+        boolean hasToken  = authHeader != null && authHeader.startsWith("Bearer ");
 
-        boolean isLogin = "/login".equals(path);
-        boolean isRegistration = "/person".equals(path) && "POST".equalsIgnoreCase(method);
-        boolean isPreflight = "OPTIONS".equalsIgnoreCase(method);
+        boolean isLogin         = "/login".equals(path);
+        boolean isPreflight     = "OPTIONS".equalsIgnoreCase(method);
+        boolean isForgotPass    = path.startsWith("/person/forgot-password");
+        boolean isResetPass     = path.startsWith("/person/reset-password");
 
-        boolean isForgotPassword = path.startsWith("/person/forgot-password");
-        boolean isResetPassword = path.startsWith("/person/reset-password");
+        // POST /person is public registration — but only skip auth when
+        // no token is present. If a token IS present (admin using the panel),
+        // fall through so the Security context gets populated.
+        boolean isPublicRegistration =
+                "/person".equals(path) && "POST".equalsIgnoreCase(method) && !hasToken;
 
-        // Allow OPTIONS requests (for CORS preflight) and /login endpoint
-        if (isLogin || isRegistration || isPreflight || isForgotPassword || isResetPassword) {
-            log.info("Skipping JWT filter for path: {} and method: {}", path, method);
+        if (isLogin || isPublicRegistration || isPreflight || isForgotPass || isResetPass) {
+            log.debug("Skipping JWT filter for: {} {}", method, path);
             filterChain.doFilter(request, response);
             return;
         }
 
-        String authHeader = request.getHeader("Authorization");
-
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            log.error("Authorization header is missing or does not start with 'Bearer '");
+        if (!hasToken) {
+            log.error("Missing Authorization header for: {} {}", method, path);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
         String token = authHeader.substring(7);
-
         try {
-            boolean isValid = jwtUtil.checkClaims(token);
-            if (!isValid) {
+            if (!jwtUtil.checkClaims(token)) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
 
             String userId = jwtUtil.getUserIdFromToken(token);
-            String role = jwtUtil.getRoleFromToken(token);
+            String role   = jwtUtil.getRoleFromToken(token);
 
-            // Create an authentication object and give it to Spring Security's context
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    userId, null, List.of(new SimpleGrantedAuthority("ROLE_" + role))
-            );
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            userId, null,
+                            List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                    );
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             filterChain.doFilter(request, response);
 
         } catch (JwtException e) {
-            log.error("Invalid JWT token: {}", e.getMessage());
+            log.error("Invalid JWT: {}", e.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         }
     }

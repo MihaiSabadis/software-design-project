@@ -1,7 +1,9 @@
+// demo-app/src/app/components/person-form-dialog/person-form-dialog.component.ts
 import {
   ChangeDetectionStrategy,
   Component,
   OnInit,
+  computed,
   inject,
   signal,
 } from '@angular/core';
@@ -25,6 +27,7 @@ export interface PersonFormValue {
   email: string;
   password?: string;
   role: string;
+  studioCode?: string;
 }
 
 export interface PersonFormInitialValue {
@@ -55,13 +58,16 @@ export class PersonFormDialogComponent implements OnInit {
   protected readonly data = inject<PersonFormDialogData>(MAT_DIALOG_DATA);
 
   protected readonly isPasswordVisible = signal(false);
+  protected readonly selectedRole = signal('PLAYER');
+  protected readonly isModerator = computed(() => this.selectedRole() === 'MODERATOR');
 
   protected readonly form = this.fb.nonNullable.group({
-    name: ['', [Validators.required, Validators.minLength(2)]],
-    age: [0, [Validators.required, Validators.min(18), Validators.max(200)]],
-    email: ['', [Validators.required]],
-    password: ['', []],
-    role: ['CUSTOMER', Validators.required],
+    name:      ['', [Validators.required, Validators.minLength(2)]],
+    age:       [0,  [Validators.required, Validators.min(18), Validators.max(200)]],
+    email:     ['', [Validators.required]],
+    password:  ['', []],
+    role:      ['PLAYER', Validators.required],
+    studioCode:['', []],
   });
 
   ngOnInit(): void {
@@ -73,6 +79,19 @@ export class PersonFormDialogComponent implements OnInit {
       this.form.controls.password.setValidators([Validators.required]);
       this.form.controls.password.updateValueAndValidity();
     }
+
+    // Keep signal in sync with form
+    this.form.controls.role.valueChanges.subscribe((role) => {
+      this.selectedRole.set(role);
+      const codeCtrl = this.form.controls.studioCode;
+      if (role === 'MODERATOR') {
+        codeCtrl.setValidators([Validators.required]);
+      } else {
+        codeCtrl.clearValidators();
+        codeCtrl.setValue('');
+      }
+      codeCtrl.updateValueAndValidity();
+    });
   }
 
   protected togglePasswordVisibility(): void {
@@ -85,10 +104,13 @@ export class PersonFormDialogComponent implements OnInit {
       return;
     }
 
-    const { name, age, email, password, role } = this.form.getRawValue();
-    const result: PersonFormValue = this.data.showPasswordField
-      ? { name, age, email, password, role }
-      : { name, age, email, role };
+    const { name, age, email, password, role, studioCode } = this.form.getRawValue();
+
+    const result: PersonFormValue = {
+      name, age, email, role,
+      ...(this.data.showPasswordField ? { password } : {}),
+      ...(role === 'MODERATOR'        ? { studioCode } : {}),
+    };
 
     this.dialogRef.close(result);
   }

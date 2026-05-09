@@ -1,37 +1,58 @@
 <div class="modal-overlay" (click)="onCancel()">
   <div class="modal-content" (click)="$event.stopPropagation()">
-    <h2>{{ gameToEdit ? 'Edit Game' : 'Add New Video Game' }}</h2>
 
-    <div class="mb-3">
-      <label for="coverUrl" class="form-label">Cover Image URL</label>
-      <input
-        type="url"
-        class="form-control"
-        id="coverUrl"
-        name="coverImageUrl"
-        [(ngModel)]="newGame.coverImageUrl"
-        placeholder="https://exemplu.ro/poza.jpg"
-      >
+    <h2>{{ gameToEdit ? 'Edit Game' : 'Add New Game' }}</h2>
+
+    <!-- Studio row -->
+    <div class="form-group">
+      <label>Studio</label>
+
+      @if (studioLocked) {
+        <!-- Locked: show the studio name as read-only -->
+        <div class="studio-locked">
+          <span class="lock-icon" aria-hidden="true">🔒</span>
+          {{ studioDisplayName }}
+        </div>
+      } @else {
+        <!-- Admin: full dropdown -->
+        <select [(ngModel)]="form.studioId" [disabled]="studios().length === 0">
+          <option value="" disabled>
+            {{ studios().length === 0 ? 'Loading studios…' : '— Select a Studio —' }}
+          </option>
+          @for (studio of studios(); track studio.id) {
+            <option [value]="studio.id">{{ studio.name }}</option>
+          }
+        </select>
+      }
     </div>
 
     <div class="form-group">
-      <label>Title:</label>
-      <input type="text" [(ngModel)]="newGame.title" placeholder="e.g. Portal">
+      <label for="game-title">Title *</label>
+      <input id="game-title" type="text"
+             [(ngModel)]="form.title"
+             placeholder="e.g. Portal 3" />
     </div>
 
     <div class="form-group">
-      <label>Developer:</label>
-      <input type="text" [(ngModel)]="newGame.developer" placeholder="e.g. Valve">
+      <label for="game-price">Price ($) *</label>
+      <input id="game-price" type="number"
+             [(ngModel)]="form.price"
+             min="0" step="0.01" />
     </div>
 
     <div class="form-group">
-      <label>Price ($):</label>
-      <input type="number" [(ngModel)]="newGame.price" min="0" step="0.01">
+      <label for="game-cover">Cover Image URL</label>
+      <input id="game-cover" type="url"
+             [(ngModel)]="form.coverImageUrl"
+             placeholder="https://example.com/cover.jpg" />
     </div>
 
     <div class="modal-actions">
       <button class="btn-cancel" (click)="onCancel()">Cancel</button>
-      <button class="btn-submit" (click)="onSubmit()">Save Game</button>
+      <button class="btn-submit" (click)="onSubmit()">
+        {{ gameToEdit ? 'Save Changes' : 'Add Game' }}
+      </button>
     </div>
+
   </div>
 </div>

@@ -3,7 +3,9 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { VideoGame } from '../models/video-game.model';
 import {VideoGameCreateDTO} from "../models/video-game-create.dto";
-import {GameAnalytics} from '../models/game-analytics';
+import { GameAnalytics } from '../models/game-analytics';
+import { ExternalGameData } from '../models/external-game-data.model';
+
 
 @Injectable({ providedIn: 'root' })
 export class VideoGameService {
@@ -44,5 +46,9 @@ export class VideoGameService {
 
   getGameAnalytics(gameId: string | undefined): Observable<GameAnalytics> {
     return this.http.get<GameAnalytics>(`${this.apiUrl}/${gameId}/analytics`);
+  }
+
+  getExternalData(gameId: string): Observable<ExternalGameData> {
+    return this.http.get<ExternalGameData>(`${this.apiUrl}/${gameId}/external-data`);
   }
 }

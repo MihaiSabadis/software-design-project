@@ -1,11 +1,15 @@
+// demo_backend/src/main/java/com/andrei/demo/service/GamePatchService.java
 package com.andrei.demo.service;
 
 import com.andrei.demo.model.GamePatch;
+import com.andrei.demo.model.Person;
+import com.andrei.demo.model.VideoGame;
 import com.andrei.demo.model.dto.GamePatchCreateDTO;
 import com.andrei.demo.model.dto.GamePatchResponseDTO;
-import com.andrei.demo.model.VideoGame;
 import com.andrei.demo.repository.GamePatchRepository;
+import com.andrei.demo.repository.PersonRepository;
 import com.andrei.demo.repository.VideoGameRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,43 +22,82 @@ public class GamePatchService {
 
     private final GamePatchRepository gamePatchRepository;
     private final VideoGameRepository videoGameRepository;
+    private final PersonRepository personRepository;
 
-    public GamePatchService(GamePatchRepository gamePatchRepository, VideoGameRepository videoGameRepository) {
+    public GamePatchService(GamePatchRepository gamePatchRepository,
+                            VideoGameRepository videoGameRepository,
+                            PersonRepository personRepository) {
         this.gamePatchRepository = gamePatchRepository;
         this.videoGameRepository = videoGameRepository;
+        this.personRepository = personRepository;
     }
+
+    // ── Studio ownership check ────────────────────────────────────────────
+
+    private void assertCanManageGame(VideoGame game) {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) return;
+
+        boolean isModerator = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_MODERATOR"));
+        if (!isModerator) return;
+
+        String principalId = (String) auth.getPrincipal();
+        Person moderator = personRepository.findById(UUID.fromString(principalId))
+                .orElseThrow(() -> new RuntimeException("Moderator not found."));
+
+        if (moderator.getStudio() == null
+                || !moderator.getStudio().getId().equals(game.getStudio().getId())) {
+            throw new RuntimeException(
+                    "You can only manage patches for your studio's games.");
+        }
+    }
+
+    // ── CRUD ─────────────────────────────────────────────────────────────
 
     @Transactional
     public GamePatchResponseDTO addPatchToGame(UUID gameId, GamePatchCreateDTO patchDTO) {
-        // 1. Verificăm dacă jocul există
         VideoGame game = videoGameRepository.findById(gameId)
-                .orElseThrow(() -> new RuntimeException("Jocul cu ID-ul " + gameId + " nu a fost găsit!"));
+                .orElseThrow(() -> new RuntimeException(
+                        "Game with ID " + gameId + " not found."));
 
-        // 2. Creăm entitatea de bază din DTO
+        assertCanManageGame(game);
+
         GamePatch patch = new GamePatch();
         patch.setVersion(patchDTO.getVersion());
         patch.setDescription(patchDTO.getDescription());
         patch.setReleaseDate(patchDTO.getReleaseDate());
-
-        // 3. Facem legătura!
         patch.setVideoGame(game);
 
-        // 4. Salvăm în baza de date
-        GamePatch savedPatch = gamePatchRepository.save(patch);
-
-        return mapToResponseDTO(savedPatch);
+        return mapToDTO(gamePatchRepository.save(patch));
     }
 
     @Transactional(readOnly = true)
     public List<GamePatchResponseDTO> getPatchesForGame(UUID gameId) {
-        return gamePatchRepository.findByVideoGameIdOrderByReleaseDateAsc(gameId)
+        return gamePatchRepository
+                .findByVideoGameIdOrderByReleaseDateAsc(gameId)
                 .stream()
-                .map(this::mapToResponseDTO)
+                .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
-    // Funcție utilitară pentru mapare
-    private GamePatchResponseDTO mapToResponseDTO(GamePatch patch) {
+    @Transactional
+    public void deletePatch(UUID gameId, UUID patchId) {
+        GamePatch patch = gamePatchRepository.findById(patchId)
+                .orElseThrow(() -> new RuntimeException("Patch not found."));
+
+        if (!patch.getVideoGame().getId().equals(gameId)) {
+            throw new RuntimeException("Patch does not belong to this game.");
+        }
+
+        assertCanManageGame(patch.getVideoGame());
+
+        gamePatchRepository.deleteById(patchId);
+    }
+
+    // ── Mapper ────────────────────────────────────────────────────────────
+
+    private GamePatchResponseDTO mapToDTO(GamePatch patch) {
         GamePatchResponseDTO dto = new GamePatchResponseDTO();
         dto.setId(patch.getId());
         dto.setVersion(patch.getVersion());

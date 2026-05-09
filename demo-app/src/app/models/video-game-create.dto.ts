@@ -1,6 +1,6 @@
 export interface VideoGameCreateDTO {
   title: string;
   price: number;
-  developer: string;
+  studioId: string;
   coverImageUrl?: string;
 }

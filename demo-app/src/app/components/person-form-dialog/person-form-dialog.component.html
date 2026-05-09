@@ -2,12 +2,41 @@
 
 <mat-dialog-content>
   <form [formGroup]="form" id="person-form" (ngSubmit)="submit()">
+
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Role</mat-label>
+      <mat-select formControlName="role">
+        <mat-option value="ADMIN">Admin</mat-option>
+        <mat-option value="MODERATOR">Moderator</mat-option>
+        <mat-option value="PLAYER">Player</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Studio code — only when Moderator is selected -->
+    @if (isModerator()) {
+      <div class="studio-hint">
+        <span aria-hidden="true">🏢</span>
+        Moderators must have a valid studio registration code.
+      </div>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Studio Registration Code</mat-label>
+        <input matInput formControlName="studioCode"
+               autocomplete="off"
+               placeholder="e.g. A3F7C2B1" />
+        @if (form.controls.studioCode.hasError('required')) {
+          <mat-error>Studio code is required for moderators.</mat-error>
+        }
+      </mat-form-field>
+    }
+
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Name</mat-label>
       <input matInput formControlName="name" autocomplete="name" />
       @if (form.controls.name.hasError('required')) {
         <mat-error>Name is required.</mat-error>
-      } @else if (form.controls.name.hasError('minlength')) {
+      }
+      @if (form.controls.name.hasError('minlength')) {
         <mat-error>Name must be at least 2 characters.</mat-error>
       }
     </mat-form-field>
@@ -17,19 +46,10 @@
       <input matInput type="number" formControlName="age" autocomplete="off" />
       @if (form.controls.age.hasError('required')) {
         <mat-error>Age is required.</mat-error>
-      } @else if (form.controls.age.hasError('min')) {
-        <mat-error>Age must be at least 18.</mat-error>
-      } @else if (form.controls.age.hasError('max')) {
-        <mat-error>Age must be less than 200.</mat-error>
       }
-    </mat-form-field>
-
-    <mat-form-field appearance="fill" class="full-width">
-      <mat-label>Role</mat-label>
-      <mat-select formControlName="role">
-        <mat-option value="ADMIN">Admin</mat-option>
-        <mat-option value="PLAYER">Player</mat-option>
-      </mat-select>
+      @if (form.controls.age.hasError('min')) {
+        <mat-error>Age must be at least 18.</mat-error>
+      }
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="full-width">
@@ -50,9 +70,7 @@
           autocomplete="new-password"
         />
         <button
-          mat-button
-          matSuffix
-          type="button"
+          mat-button matSuffix type="button"
           [attr.aria-label]="isPasswordVisible() ? 'Hide password' : 'Show password'"
           [attr.aria-pressed]="isPasswordVisible()"
           (click)="togglePasswordVisibility()"
@@ -64,11 +82,13 @@
         }
       </mat-form-field>
     }
+
   </form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
   <button mat-button type="button" (click)="cancel()">Cancel</button>
-  <button mat-flat-button type="submit" form="person-form">{{ data.submitLabel ?? 'Submit' }}</button>
+  <button mat-flat-button type="submit" form="person-form">
+    {{ data.submitLabel ?? 'Submit' }}
+  </button>
 </mat-dialog-actions>
-

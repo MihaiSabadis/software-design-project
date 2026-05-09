@@ -20,5 +20,6 @@ public class VideoGameCreateDTO {
     @Min(value = 0, message = "Price cannot be negative")
     private Double price;
 
-
+    @NotNull(message = "Studio ID is required")
+    private UUID studioId;
 }

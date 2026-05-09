@@ -1,0 +1,61 @@
+<nav class="navbar" aria-label="Main navigation">
+
+  <!-- Brand -->
+  <a class="brand" routerLink="/games" aria-label="Go to games">
+    <span class="brand-icon" aria-hidden="true">🎮</span>
+    <span class="brand-name">PlayWorthy</span>
+  </a>
+
+  <!-- Nav links -->
+  <ul class="nav-links" role="list">
+
+    <li>
+      <a routerLink="/games"
+         routerLinkActive="active"
+         [routerLinkActiveOptions]="{ exact: false }">
+        <span class="nav-icon" aria-hidden="true">🕹️</span>
+        Games
+      </a>
+    </li>
+
+    @if (isPlayer()) {
+      <li>
+        <a routerLink="/player"
+           routerLinkActive="active">
+          <span class="nav-icon" aria-hidden="true">📚</span>
+          Library
+        </a>
+      </li>
+    }
+
+    @if (isAdmin()) {
+      <li>
+        <a routerLink="/people"
+           routerLinkActive="active">
+          <span class="nav-icon" aria-hidden="true">👥</span>
+          People
+        </a>
+      </li>
+      <li>
+        <a routerLink="/studios"
+           routerLinkActive="active">
+          <span class="nav-icon" aria-hidden="true">🏢</span>
+          Studios
+        </a>
+      </li>
+    }
+
+  </ul>
+
+  <!-- Right side -->
+  <div class="nav-right">
+    <span class="role-badge" [class]="'role-' + role()?.toLowerCase()">
+      {{ role() }}
+    </span>
+    <button class="btn-logout" (click)="logout()" aria-label="Log out">
+      <span aria-hidden="true">→</span>
+      Logout
+    </button>
+  </div>
+
+</nav>

@@ -1,0 +1,44 @@
+<!-- studio-management-page.component.html -->
+<main class="content">
+  <h1>Studio Management</h1>
+
+  <section class="create-form">
+    <h2>Create New Studio</h2>
+    <form [formGroup]="form" (ngSubmit)="create()">
+      <mat-form-field appearance="outline">
+        <mat-label>Studio Name</mat-label>
+        <input matInput formControlName="name" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Description</mat-label>
+        <input matInput formControlName="description" />
+      </mat-form-field>
+      <button mat-flat-button type="submit" [disabled]="form.invalid">Create Studio</button>
+    </form>
+  </section>
+
+  <table mat-table [dataSource]="studios()">
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Name</th>
+      <td mat-cell *matCellDef="let s">{{ s.name }}</td>
+    </ng-container>
+    <ng-container matColumnDef="description">
+      <th mat-header-cell *matHeaderCellDef>Description</th>
+      <td mat-cell *matCellDef="let s">{{ s.description }}</td>
+    </ng-container>
+    <ng-container matColumnDef="registrationCode">
+      <th mat-header-cell *matHeaderCellDef>Registration Code</th>
+      <td mat-cell *matCellDef="let s"><code>{{ s.registrationCode }}</code></td>
+    </ng-container>
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef>Actions</th>
+      <td mat-cell *matCellDef="let s">
+        <button mat-icon-button (click)="delete(s.id)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+</main>

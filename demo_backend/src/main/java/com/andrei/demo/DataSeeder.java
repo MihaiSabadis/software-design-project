@@ -7,12 +7,14 @@ import com.andrei.demo.repository.GamePatchRepository;
 import com.andrei.demo.repository.PriceHistoryRepository;
 import com.andrei.demo.repository.VideoGameRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Component
+@Order(2)
 public class DataSeeder implements CommandLineRunner {
 
     private final VideoGameRepository videoGameRepository;
