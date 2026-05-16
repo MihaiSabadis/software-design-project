@@ -1,5 +1,59 @@
-<div class="empty-state">
-  <span class="icon" aria-hidden="true">🎮</span>
-  <h1>Welcome, Player!</h1>
-  <p>Browse the store and add games to your library to get started.</p>
+<div class="library-page">
+
+  <header class="library-header">
+    <div>
+      <h1>My Library</h1>
+      @if (!isLoading()) {
+        <p class="game-count">
+          {{ ownedGames().length }}
+          {{ ownedGames().length === 1 ? 'game' : 'games' }}
+        </p>
+      }
+    </div>
+    <a class="btn-browse" routerLink="/games">Browse Store</a>
+  </header>
+
+  @if (removeError()) {
+    <div class="error-banner" role="alert">
+      <span aria-hidden="true">⚠️</span> {{ removeError() }}
+    </div>
+  }
+
+  @if (isLoading()) {
+    <div class="games-grid">
+      @for (i of [1,2,3,4,5,6]; track i) {
+        <div class="skeleton-card"></div>
+      }
+    </div>
+  }
+
+  @if (loadError() && !isLoading()) {
+    <div class="empty-state">
+      <span class="empty-icon" aria-hidden="true">⚠️</span>
+      <p>{{ loadError() }}</p>
+    </div>
+  }
+
+  @if (!isLoading() && !loadError() && ownedGames().length === 0) {
+    <div class="empty-state">
+      <span class="empty-icon" aria-hidden="true">🎮</span>
+      <h2>Your library is empty</h2>
+      <p>Head to the store and add some games to get started.</p>
+      <a class="btn-browse" routerLink="/games">Go to Store</a>
+    </div>
+  }
+
+  @if (!isLoading() && ownedGames().length > 0) {
+    <div class="games-grid">
+      @for (game of ownedGames(); track game.id) {
+        <app-video-game-card
+          [game]="game"
+          [showRemoveButton]="true"
+          [isRemoving]="removingId() === game.id"
+          (removeClick)="handleRemove($event)">
+        </app-video-game-card>
+      }
+    </div>
+  }
+
 </div>

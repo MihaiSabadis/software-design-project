@@ -33,6 +33,8 @@ export class PersonService {
     return this.http.post<Person>(`${API_URL}/${personId}/games/${gameId}`, {});
   }
 
-
+  removeGameFromLibrary(personId: string, gameId: string): Observable<Person> {
+    return this.http.delete<Person>(`${API_URL}/${personId}/games/${gameId}`, {});
+  }
 }
 

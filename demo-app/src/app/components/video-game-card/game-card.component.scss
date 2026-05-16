@@ -106,5 +106,20 @@
 
     .btn-primary { background-color: #ffc107; color: #000000; }
     .btn-danger { background-color: #dc3545; color: #ffffff; }
+    .btn-remove {
+      flex: 1;
+      background: transparent;
+      border: 1px solid rgba(229, 57, 53, 0.4);
+      color: #ff6b6b;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 0.5rem 0;
+      transition: background 0.2s;
+
+      &:hover:not(:disabled) { background: rgba(229, 57, 53, 0.12); }
+      &:disabled { opacity: 0.5; cursor: not-allowed; }
+    }
   }
 }

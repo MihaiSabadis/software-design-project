@@ -21,13 +21,15 @@ import { LoginStore } from '../../features/login/login.store';
 })
 export class GameCardComponent {
   readonly game = input.required<VideoGame>();
-  // The studio ID of the logged-in moderator (null for admin/player)
   readonly moderatorStudioId = input<string | null>(null);
+  readonly showRemoveButton = input<boolean>(false);
+  readonly isRemoving = input<boolean>(false);
 
   readonly loginStore = inject(LoginStore);
 
   @Output() deleteClick = new EventEmitter<string>();
   @Output() editClick = new EventEmitter<VideoGame>();
+  @Output() removeClick = new EventEmitter<string>();
 
   protected readonly canManage = computed(() => {
     const role = this.loginStore.role();
@@ -46,5 +48,10 @@ export class GameCardComponent {
 
   protected onEdit(): void {
     this.editClick.emit(this.game());
+  }
+
+  protected onRemove(): void {
+    const id = this.game().id;
+    if (id) this.removeClick.emit(id);
   }
 }

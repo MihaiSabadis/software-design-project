@@ -16,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @CrossOrigin
@@ -44,10 +45,6 @@ public class PersonController {
         return ResponseEntity.ok(personService.getPersonByEmail(email));
     }
 
-    /**
-     * Public registration (no token) — PLAYER and MODERATOR only.
-     * Admin-authenticated call (token present) — any role including ADMIN.
-     */
     @PostMapping
     public ResponseEntity<?> addPerson(@Valid @RequestBody PersonCreateDTO personDTO)
             throws ValidationException {
@@ -55,7 +52,7 @@ public class PersonController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean callerIsAdmin = auth != null && auth.isAuthenticated()
                 && auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                .anyMatch(a -> Objects.equals(a.getAuthority(), "ROLE_ADMIN"));
 
         // Block self-promotion to ADMIN through the public endpoint
         if (personDTO.getRole() == Role.ADMIN && !callerIsAdmin) {
@@ -72,6 +69,14 @@ public class PersonController {
             @PathVariable UUID personId,
             @PathVariable UUID gameId) throws ValidationException {
         return ResponseEntity.ok(personService.addGameToLibrary(personId, gameId));
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or principal == #personId.toString()")
+    @DeleteMapping("/{personId}/games/{gameId}")
+    public ResponseEntity<?> removeGameFromLibrary(
+            @PathVariable UUID personId,
+            @PathVariable UUID gameId) throws ValidationException {
+        return ResponseEntity.ok(personService.removeGameFromLibrary(personId, gameId));
     }
 
     @PreAuthorize("hasRole('ADMIN') or principal == #uuid.toString()")

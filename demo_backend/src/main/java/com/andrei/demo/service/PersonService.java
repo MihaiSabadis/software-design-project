@@ -117,7 +117,7 @@ public class PersonService {
     }
 
     @Transactional
-    public Person removeGameToLibrary(UUID personId, UUID gameId) throws ValidationException {
+    public Person removeGameFromLibrary(UUID personId, UUID gameId) throws ValidationException {
         Person person = personRepository.findById(personId)
                 .orElseThrow(() -> new ValidationException("Person with ID " + personId + " not found"));
 

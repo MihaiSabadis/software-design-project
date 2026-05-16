@@ -9,7 +9,7 @@
   <div class="card-content">
     <div class="card-info">
       <h3>{{ game().title }}</h3>
-      <p class="studio-name">{{ game().studio?.name || 'Unknown Studio' }}</p>
+      <p class="studio-name">{{ game().studio.name || 'Unknown' }}</p>
     </div>
 
     <div class="card-price-section">
@@ -18,11 +18,24 @@
     </div>
 
     <div class="card-actions">
-      <button class="btn-details" [routerLink]="['/games', game().id]">Details</button>
+      <button class="btn-details" [routerLink]="['/games', game().id]">
+        Details
+      </button>
 
       @if (canManage()) {
         <button class="btn-primary" (click)="onEdit()">Edit</button>
         <button class="btn-danger"  (click)="onDelete()">Delete</button>
+      }
+
+      @if (showRemoveButton()) {
+        <button
+          class="btn-remove"
+          (click)="onRemove()"
+          [disabled]="isRemoving()"
+          [attr.aria-label]="'Remove ' + game().title + ' from library'"
+        >
+          {{ isRemoving() ? '...' : 'Remove' }}
+        </button>
       }
     </div>
   </div>
