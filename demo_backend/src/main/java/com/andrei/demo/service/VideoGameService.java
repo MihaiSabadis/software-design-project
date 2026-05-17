@@ -5,6 +5,8 @@ import com.andrei.demo.model.Person;
 import com.andrei.demo.model.Studio;
 import com.andrei.demo.model.VideoGame;
 import com.andrei.demo.model.dto.VideoGameCreateDTO;
+import com.andrei.demo.model.PriceHistory;
+import com.andrei.demo.repository.PriceHistoryRepository;
 import com.andrei.demo.repository.PersonRepository;
 import com.andrei.demo.repository.StudioRepository;
 import com.andrei.demo.repository.VideoGameRepository;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.time.LocalDate;
 
 @Service
 @AllArgsConstructor
@@ -26,6 +29,7 @@ public class VideoGameService {
     private final VideoGameRepository videoGameRepository;
     private final StudioRepository studioRepository;
     private final PersonRepository personRepository;
+    private final PriceHistoryRepository priceHistoryRepository;
 
     // ── Shared helper ────────────────────────────────────────────────────────
 
@@ -96,7 +100,6 @@ public class VideoGameService {
         return videoGameRepository.save(game);
     }
 
-    // Accepts DTO — same shape the frontend sends for both create and update
     public VideoGame updateVideoGame(UUID gameId, VideoGameCreateDTO dto) {
         VideoGame existing = videoGameRepository.findById(gameId)
                 .orElseThrow(() -> new ValidationException(
@@ -104,6 +107,8 @@ public class VideoGameService {
 
         Person moderator = getModeratorIfApplicable();
         assertModeratorOwnsGame(moderator, existing);
+
+        recordPriceIfChanged(existing, dto.getPrice());// add to the past prices when the game changes
 
         existing.setTitle(dto.getTitle());
         existing.setPrice(dto.getPrice());
@@ -152,7 +157,9 @@ public class VideoGameService {
             existing.setTitle(newTitle);
         }
         if (updates.containsKey("price")) {
-            existing.setPrice(((Number) updates.get("price")).doubleValue());
+            Double newPrice = ((Number) updates.get("price")).doubleValue();
+            recordPriceIfChanged(existing, newPrice);
+            existing.setPrice(newPrice);
         }
         if (updates.containsKey("coverImageUrl")) {
             existing.setCoverImageUrl((String) updates.get("coverImageUrl"));
@@ -181,11 +188,21 @@ public class VideoGameService {
                 processedTitle, studioName, maxPrice, sort);
     }
 
-    // ── Private helper ───────────────────────────────────────────────────────
+    // ── Private helpers ───────────────────────────────────────────────────────
 
     private VideoGame buildGameWithStudio(Studio studio) {
         VideoGame tmp = new VideoGame();
         tmp.setStudio(studio);
         return tmp;
+    }
+
+    private void recordPriceIfChanged(VideoGame game, Double newPrice) {
+        if (newPrice != null && !newPrice.equals(game.getPrice())) {
+            PriceHistory point = new PriceHistory();
+            point.setVideoGame(game);
+            point.setPrice(newPrice);
+            point.setRecordedAt(LocalDate.now());
+            priceHistoryRepository.save(point);
+        }
     }
 }
