@@ -11,13 +11,4 @@ public class ExternalGameDataDTO {
     private String metacriticScore;
     private String steamRating;
     private List<StoreDealDTO> currentDeals;
-
-    @Data
-    public static class StoreDealDTO {
-        private String storeName;
-        private String price;
-        private String retailPrice;
-        private String savingsPercent;
-        private String dealUrl;
-    }
 }

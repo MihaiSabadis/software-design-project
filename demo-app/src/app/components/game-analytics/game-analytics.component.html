@@ -1,9 +1,16 @@
 <div class="analytics-container">
 
-  <div class="section-header">
-    <h2>Price History</h2>
-    <p>Price over time vs. patch releases</p>
-  </div>
+  <header class="section-header">
+    <div>
+      <h2>Price History</h2>
+      <p>Local price changes vs. patches, with all-time low overlay</p>
+    </div>
+    <span class="legend">
+      <span class="dot accent"></span>Price
+      <span class="dot gold"></span>Patch
+      <span class="dot danger"></span>All-time low
+    </span>
+  </header>
 
   <div class="chart-wrapper">
     @if (isChartLoaded()) {
@@ -13,65 +20,106 @@
               [options]="lineChartOptions">
       </canvas>
     } @else {
-      <div class="chart-placeholder">
-        <span class="loading-dot"></span>
-        Loading chart...
+      <div class="chart-skeleton" role="status" aria-live="polite">
+        <span class="skeleton-bar"></span>
+        <span class="skeleton-bar"></span>
+        <span class="skeleton-bar"></span>
+        <span class="skeleton-label">Loading price history…</span>
       </div>
     }
   </div>
 
+  <!-- Live data section -->
   @if (isExternalLoaded()) {
-    @if (externalData(); as ext) {
+
+    @if (hasAnyExternalData()) {
+      @let ext = externalData()!;
 
       <!-- Stats row -->
       <div class="stats-row">
+
         @if (ext.metacriticScore) {
-          <div class="stat-chip metacritic">
+          <div class="stat-chip" [attr.data-tier]="metacriticTier()">
             <span class="chip-label">Metacritic</span>
             <span class="chip-value">{{ ext.metacriticScore }}</span>
           </div>
         }
+
         @if (ext.steamRating) {
-          <div class="stat-chip steam">
+          <div class="stat-chip steam" [attr.data-tier]="steamTier()">
             <span class="chip-label">Steam</span>
             <span class="chip-value">{{ ext.steamRating }}</span>
           </div>
         }
+
         @if (ext.cheapestPriceEver) {
           <div class="stat-chip low">
             <span class="chip-label">All-time Low</span>
             <span class="chip-value">${{ ext.cheapestPriceEver }}</span>
             @if (ext.cheapestPriceDateEpoch) {
-              <span class="chip-sub">{{ epochToDate(ext.cheapestPriceDateEpoch) }}</span>
+              <span class="chip-sub">
+                {{ ext.cheapestPriceDateEpoch * 1000 | date: 'MMM d, y' }}
+              </span>
             }
           </div>
         }
+
       </div>
 
       <!-- Current deals -->
-      @if (ext.currentDeals.length) {
-        <div class="deals-section">
-          <h3>Buy Now</h3>
+      @if (sortedDeals().length) {
+        <section class="deals-section" aria-labelledby="deals-heading">
+          <h3 id="deals-heading">Buy Now</h3>
           <div class="deals-grid">
-            @for (deal of ext.currentDeals; track deal.storeName) {
-              <a class="deal-tile" [href]="deal.dealUrl" target="_blank" rel="noopener">
+            @for (deal of sortedDeals(); track deal.storeName) {
+              <a class="deal-tile"
+                 [class.best-deal]="deal.isBestDeal"
+                 [href]="deal.dealUrl"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 [attr.aria-label]="
+                   'Buy on ' + deal.storeName + ' for $' + deal.price +
+                   (deal.isBestDeal ? ' — best price' : '')
+                 ">
+                @if (deal.isBestDeal) {
+                  <span class="best-badge" aria-hidden="true">★ BEST</span>
+                }
                 <span class="store">{{ deal.storeName }}</span>
                 <span class="current-price">${{ deal.price }}</span>
                 <div class="deal-bottom">
                   @if (+deal.savingsPercent > 0) {
-                    <span class="savings">-{{ deal.savingsPercent }}%</span>
+                    <span class="savings">−{{ +deal.savingsPercent | number: '1.0-0' }}%</span>
+                    <span class="original">${{ deal.retailPrice }}</span>
+                  } @else {
+                    <span class="full-price">Full price</span>
                   }
-                  <span class="original">${{ deal.retailPrice }}</span>
                 </div>
               </a>
             }
           </div>
-        </div>
+        </section>
+      } @else {
+        <p class="empty-deals">No active store deals right now.</p>
       }
 
+    } @else {
+      <!-- Game isn't tracked by CheapShark — usually a custom-added title -->
+      <div class="no-external-data" role="status">
+        <span class="empty-icon" aria-hidden="true">🔍</span>
+        <p class="empty-title">No live pricing data available</p>
+        <p class="empty-hint">
+          This title isn't tracked on CheapShark, so we can't pull store prices,
+          Metacritic, or Steam ratings. The local price history and patches above
+          still work normally.
+        </p>
+      </div>
     }
+
   } @else {
-    <p class="loading-inline">Fetching live prices...</p>
+    <div class="loading-inline" role="status">
+      <span class="loading-dot"></span>
+      Fetching live prices and reviews…
+    </div>
   }
 
 </div>

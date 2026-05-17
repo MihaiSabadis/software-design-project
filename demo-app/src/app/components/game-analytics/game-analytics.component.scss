@@ -6,12 +6,43 @@
   margin: 1.5rem 0;
 }
 
+// ── Header ──────────────────────────────────────────────────────────────
 .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
   margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+
   h2 { margin: 0 0 0.25rem; font-size: 1.1rem; font-weight: 700; }
-  p { margin: 0; color: var(--color-text-muted); font-size: 0.85rem; }
+  p  { margin: 0; color: var(--color-text-muted); font-size: 0.85rem; }
 }
 
+.legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.35rem;
+    vertical-align: middle;
+
+    &.accent { background: var(--color-accent); }
+    &.gold   { background: var(--color-gold); }
+    &.danger { background: #ff5252; }
+  }
+}
+
+// ── Chart ───────────────────────────────────────────────────────────────
 .chart-wrapper {
   position: relative;
   height: 320px;
@@ -19,30 +50,49 @@
   margin-bottom: 1.5rem;
 }
 
-.chart-placeholder {
-  height: 100%;
+.chart-skeleton {
+  position: absolute;
+  inset: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  color: var(--color-text-muted);
-  font-size: 0.9rem;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 1rem;
+  overflow: hidden;
+
+  .skeleton-bar {
+    height: 14px;
+    border-radius: 4px;
+    background: linear-gradient(
+      90deg,
+      rgba(164, 151, 198, 0.06) 0%,
+      rgba(164, 151, 198, 0.18) 50%,
+      rgba(164, 151, 198, 0.06) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
+
+    &:nth-child(1) { width: 90%; }
+    &:nth-child(2) { width: 75%; opacity: 0.7; }
+    &:nth-child(3) { width: 60%; opacity: 0.45; }
+  }
+
+  .skeleton-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+  }
 }
 
-.loading-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--color-accent);
-  animation: pulse 1.2s ease-in-out infinite;
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.75); }
-}
-
-// Stats row
+// ── Stats row ───────────────────────────────────────────────────────────
 .stats-row {
   display: flex;
   flex-wrap: wrap;
@@ -57,21 +107,37 @@
   padding: 0.6rem 1.1rem;
   border-radius: 10px;
   min-width: 90px;
-  border: 1px solid transparent;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-2);
+  transition: transform 0.15s;
 
   .chip-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.75; }
   .chip-value { font-size: 1.25rem; font-weight: 800; line-height: 1.2; }
-  .chip-sub { font-size: 0.65rem; opacity: 0.65; margin-top: 2px; }
+  .chip-sub   { font-size: 0.65rem; opacity: 0.65; margin-top: 2px; }
 
-  &.metacritic {
-    background: rgba(102, 204, 51, 0.15);
+  &[data-tier='high'] {
+    background: rgba(102, 204, 51, 0.12);
     border-color: rgba(102, 204, 51, 0.4);
     .chip-value { color: #66cc33; }
   }
-  &.steam {
-    background: rgba(164, 151, 198, 0.1);
-    border-color: var(--color-border);
+  &[data-tier='medium'] {
+    background: rgba(255, 193, 7, 0.12);
+    border-color: rgba(255, 193, 7, 0.4);
+    .chip-value { color: var(--color-gold); }
   }
+  &[data-tier='low'] {
+    background: rgba(229, 57, 53, 0.12);
+    border-color: rgba(229, 57, 53, 0.4);
+    .chip-value { color: #ff6b6b; }
+  }
+  &[data-tier='none'] .chip-value { color: var(--color-text-muted); }
+
+  &.steam .chip-value {
+    font-size: 0.95rem;
+    text-align: center;
+    line-height: 1.25;
+  }
+
   &.low {
     background: rgba(229, 57, 53, 0.1);
     border-color: rgba(229, 57, 53, 0.35);
@@ -79,7 +145,7 @@
   }
 }
 
-// Deals
+// ── Deals ───────────────────────────────────────────────────────────────
 .deals-section {
   h3 {
     margin: 0 0 0.85rem;
@@ -93,35 +159,80 @@
 
 .deals-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 0.65rem;
 }
 
 .deal-tile {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
   background: var(--color-surface-2);
   border: 1px solid var(--color-border);
   border-radius: 10px;
-  padding: 0.75rem;
+  padding: 0.85rem 0.75rem 0.75rem;
   text-decoration: none;
   color: var(--color-text);
-  transition: border-color 0.2s, transform 0.15s;
+  transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
 
   &:hover {
     border-color: var(--color-accent);
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   }
 
-  .store { font-size: 0.7rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.4px; }
-  .current-price { font-size: 1.3rem; font-weight: 800; color: var(--color-accent); }
+  &:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  &.best-deal {
+    border-color: var(--color-accent);
+    background: linear-gradient(
+      135deg,
+      rgba(0, 214, 160, 0.08) 0%,
+      var(--color-surface-2) 70%
+    );
+    box-shadow: 0 0 0 1px rgba(0, 214, 160, 0.25);
+
+    .current-price { color: var(--color-accent); }
+  }
+
+  .best-badge {
+    position: absolute;
+    top: -8px;
+    right: 10px;
+    background: var(--color-accent);
+    color: #000;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0, 214, 160, 0.4);
+  }
+
+  .store {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-weight: 600;
+  }
+
+  .current-price {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--color-accent);
+  }
 
   .deal-bottom {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    margin-top: 0.1rem;
+    margin-top: 0.15rem;
+    min-height: 1.2rem;
   }
 
   .savings {
@@ -139,10 +250,70 @@
     text-decoration: line-through;
     color: var(--color-text-muted);
   }
+
+  .full-price {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
 }
 
+// ── Loading / empty states ──────────────────────────────────────────────
 .loading-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  margin: 0.75rem 0 0;
+}
+
+.loading-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(0.75); }
+}
+
+.empty-deals {
   color: var(--color-text-muted);
   font-size: 0.85rem;
   margin: 0.5rem 0 0;
+  font-style: italic;
+}
+
+// CheapShark didn't recognize the title
+.no-external-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.75rem 1rem;
+  background: var(--color-surface-2);
+  border: 1px dashed var(--color-border);
+  border-radius: 12px;
+  text-align: center;
+
+  .empty-icon { font-size: 1.75rem; opacity: 0.65; }
+
+  .empty-title {
+    margin: 0;
+    color: var(--color-text);
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .empty-hint {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+    max-width: 380px;
+    line-height: 1.5;
+  }
 }

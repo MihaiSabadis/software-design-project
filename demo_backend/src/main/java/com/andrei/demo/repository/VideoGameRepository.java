@@ -17,14 +17,15 @@ public interface VideoGameRepository extends JpaRepository<VideoGame, UUID> {
     boolean existsByTitle(String newTitle);
     boolean existsById(@NonNull UUID id);
 
+
     @Query("SELECT v FROM VideoGame v WHERE " +
-            "(:searchTitle IS NULL OR LOWER(v.title) LIKE LOWER(:searchTitle)) AND " +
-            "(:studioName IS NULL OR v.studio.name = :studioName) AND " +
-            "(:maxPrice IS NULL OR v.price <= :maxPrice)")
+            "(:searchTitle IS NULL OR LOWER(v.title) LIKE :searchTitle) AND " +
+            "(:studioName  IS NULL OR v.studio.name = :studioName) AND " +
+            "(:maxPrice    IS NULL OR v.price <= :maxPrice)")
     List<VideoGame> searchAndFilterGames(
             @Param("searchTitle") String searchTitle,
-            @Param("studioName") String studioName,
-            @Param("maxPrice") Double maxPrice,
+            @Param("studioName")  String studioName,
+            @Param("maxPrice")    Double maxPrice,
             Sort sort
     );
 }

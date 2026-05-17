@@ -1,4 +1,4 @@
-// demo-app/src/app/models/external-game-data.model.ts
+
 export interface StoreDeal {
   storeName: string;
   price: string;
