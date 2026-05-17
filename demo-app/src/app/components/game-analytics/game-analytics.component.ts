@@ -14,6 +14,8 @@ import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartOptions, Chart, registerables } from 'chart.js';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import { VideoGameService } from '../../services/video-game.service';
+import { ReviewService } from '../../services/review.service';
+import { Review } from '../../models/review.model';
 import { GameAnalytics } from '../../models/game-analytics';
 import { ExternalGameData, StoreDeal } from '../../models/external-game-data.model';
 import 'chartjs-adapter-date-fns';
@@ -37,16 +39,16 @@ export class GameAnalyticsComponent {
   readonly gameId = input.required<string | undefined>();
 
   private readonly gameService = inject(VideoGameService);
+  private readonly reviewService = inject(ReviewService);
 
   @ViewChild(BaseChartDirective) private chart?: BaseChartDirective;
 
   // ── State ─────────────────────────────────────────────────────────────
   protected readonly isChartLoaded = signal(false);
+  protected readonly isReviewChartLoaded = signal(false);
   protected readonly externalData = signal<ExternalGameData | null>(null);
   protected readonly isExternalLoaded = signal(false);
 
-  // True only when CheapShark actually returned something useful.
-  // An empty DTO (all-null fields) means the title isn't in their catalog.
   protected readonly hasAnyExternalData = computed(() => {
     const ext = this.externalData();
     if (!ext) return false;
@@ -87,6 +89,42 @@ export class GameAnalyticsComponent {
   });
 
   // ── Chart config ──────────────────────────────────────────────────────
+
+  barChartData: ChartConfiguration<'bar'>['data'] = {
+    labels: ['1 Star', '2 Stars', '3 Stars', '4 Stars', '5 Stars'],
+    datasets: [
+      {
+        data: [0, 0, 0, 0, 0], // This will hold our review counts
+        label: 'Reviews',
+        // Optional: Color code the bars from red (bad) to green (good)
+        backgroundColor: ['#ff4d4f', '#ff7a45', '#ffa940', '#fadb14', '#00d6a0'],
+        borderRadius: 4, // Rounded corners on the bars
+      },
+    ],
+  };
+
+  barChartOptions: ChartOptions<'bar'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    color: '#ffffff',
+    scales: {
+      x: {
+        grid: { display: false }, // Hide vertical grid lines for a cleaner look
+        ticks: { color: '#a497c6' },
+      },
+      y: {
+        grid: { color: 'rgba(255,255,255,0.06)' },
+        ticks: {
+          color: '#a497c6',
+          stepSize: 1, // Reviews are whole numbers, so steps should be 1
+        },
+      },
+    },
+    plugins: {
+      legend: { display: false }, // Hide the legend since we only have one dataset
+    },
+  };
+
   protected lineChartData: ChartConfiguration<'line'>['data'] = {
     labels: [],
     datasets: [
@@ -146,6 +184,7 @@ export class GameAnalyticsComponent {
       if (!id) return;
       this.loadAnalytics(id);
       this.loadExternalData(id);
+      this.loadReviews(id);
     });
   }
 
@@ -170,6 +209,37 @@ export class GameAnalyticsComponent {
       },
       error: () => this.isExternalLoaded.set(true),
     });
+  }
+
+  private loadReviews(id: string): void {
+    this.reviewService.getReviewsForGame(id).subscribe({
+      next: (reviews: Review[]) => {
+        this.processReviewDistribution(reviews);
+        this.isReviewChartLoaded.set(true);
+      },
+      error: (err) => {
+        console.error('Failed to load reviews for chart', err);
+        this.isReviewChartLoaded.set(true); // Stop the loading spinner even if it fails
+      },
+    });
+  }
+
+  private processReviewDistribution(reviews: Review[]): void {
+    const counts = [0, 0, 0, 0, 0];
+
+    reviews.forEach((review) => {
+      // Assuming review.rating is a number from 1 to 5
+      const ratingIndex = Math.floor(review.score) - 1;
+
+      if (ratingIndex >= 0 && ratingIndex <= 4) {
+        counts[ratingIndex]++;
+      }
+    });
+
+    this.barChartData.datasets[0].data = counts;
+
+    // Create a new object reference so Angular detects the change and triggers Chart.js to re-render
+    this.barChartData = { ...this.barChartData };
   }
 
   // ── Chart updates ─────────────────────────────────────────────────────

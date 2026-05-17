@@ -29,14 +29,36 @@
     }
   </div>
 
-  <!-- Live data section -->
+  <header class="section-header" style="margin-top: 2.5rem;">
+    <div>
+      <h2>Player Sentiment</h2>
+      <p>Rating Distribution from local reviews</p>
+    </div>
+  </header>
+
+  <div class="chart-wrapper">
+    @if (isReviewChartLoaded()) {
+      <canvas baseChart
+              [type]="'bar'"
+              [data]="barChartData"
+              [options]="barChartOptions">
+      </canvas>
+    } @else {
+      <div class="chart-skeleton" role="status" aria-live="polite">
+        <span class="skeleton-bar"></span>
+        <span class="skeleton-bar"></span>
+        <span class="skeleton-bar"></span>
+        <span class="skeleton-label">Loading reviews…</span>
+      </div>
+    }
+  </div>
+
   @if (isExternalLoaded()) {
 
     @if (hasAnyExternalData()) {
       @let ext = externalData()!;
 
-      <!-- Stats row -->
-      <div class="stats-row">
+      <div class="stats-row" style="margin-top: 2.5rem;">
 
         @if (ext.metacriticScore) {
           <div class="stat-chip" [attr.data-tier]="metacriticTier()">
@@ -66,7 +88,6 @@
 
       </div>
 
-      <!-- Current deals -->
       @if (sortedDeals().length) {
         <section class="deals-section" aria-labelledby="deals-heading">
           <h3 id="deals-heading">Buy Now</h3>
@@ -103,8 +124,7 @@
       }
 
     } @else {
-      <!-- Game isn't tracked by CheapShark — usually a custom-added title -->
-      <div class="no-external-data" role="status">
+      <div class="no-external-data" role="status" style="margin-top: 2.5rem;">
         <span class="empty-icon" aria-hidden="true">🔍</span>
         <p class="empty-title">No live pricing data available</p>
         <p class="empty-hint">
@@ -116,7 +136,7 @@
     }
 
   } @else {
-    <div class="loading-inline" role="status">
+    <div class="loading-inline" role="status" style="margin-top: 2.5rem;">
       <span class="loading-dot"></span>
       Fetching live prices and reviews…
     </div>
