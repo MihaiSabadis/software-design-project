@@ -141,6 +141,18 @@ export class GameAnalyticsComponent {
         pointRadius: 4,
         pointHoverRadius: 7,
       },
+      {
+        data: [],
+        label: 'Predicted Trend',
+        fill: false,
+        tension: 0.35,
+        borderColor: '#ff07de',
+        borderDash: [5, 5],
+        borderWidth: 1,
+        pointBackgroundColor: '#ff07de',
+        pointRadius: 4,
+        pointHoverRadius: 7,
+      },
     ],
   };
 
@@ -243,15 +255,28 @@ export class GameAnalyticsComponent {
   }
 
   // ── Chart updates ─────────────────────────────────────────────────────
+  // ============================================================
+  // Replace these two methods in game-analytics.component.ts
+  // (everything else in the file stays the same)
+  // ============================================================
+
   private applyLocalData(data: GameAnalytics): void {
+    // 1. Historical prices
     this.lineChartData.datasets[0].data = data.priceHistory.map((p) => ({
       x: p.date as unknown as number,
       y: p.price,
     })) as ChartConfiguration<'line'>['data']['datasets'][number]['data'];
 
-    const annotations: Record<string, unknown> = {};
+    // 2. Prediction line
+    this.lineChartData.datasets[1].data = (data.pricePrediction ?? []).map((p) => ({
+      x: p.date as unknown as number,
+      y: p.price,
+    })) as ChartConfiguration<'line'>['data']['datasets'][number]['data'];
+
+    // 3. Build patch annotations, preserving any allTimeLow already added
+    const patchAnnotations: Record<string, unknown> = {};
     data.patchHistory.forEach((patch, i) => {
-      annotations[`patch${i}`] = {
+      patchAnnotations[`patch${i}`] = {
         type: 'line',
         xMin: patch.date,
         xMax: patch.date,
@@ -270,21 +295,33 @@ export class GameAnalyticsComponent {
         },
       };
     });
-    (this.lineChartOptions.plugins!.annotation as { annotations: unknown }).annotations =
-      annotations;
+
+    const existing = ((this.lineChartOptions.plugins?.annotation as any)?.annotations ??
+      {}) as Record<string, unknown>;
+    const allTimeLowExisting = existing['allTimeLow'];
+
+    // New reference for both data and options → ng2-charts picks up the change
+    this.lineChartData = { ...this.lineChartData };
+    this.lineChartOptions = {
+      ...this.lineChartOptions,
+      plugins: {
+        ...this.lineChartOptions.plugins,
+        annotation: {
+          annotations: {
+            ...patchAnnotations,
+            ...(allTimeLowExisting ? { allTimeLow: allTimeLowExisting } : {}),
+          },
+        },
+      },
+    };
 
     this.refreshChart();
   }
 
   private applyAllTimeLowAnnotation(data: ExternalGameData): void {
     if (!data.cheapestPriceEver) return;
-
     const allTimeLow = parseFloat(data.cheapestPriceEver);
     if (!Number.isFinite(allTimeLow)) return;
-
-    const annotations =
-      (this.lineChartOptions.plugins!.annotation as { annotations: Record<string, unknown> })
-        .annotations ?? {};
 
     const dateLabel = data.cheapestPriceDateEpoch
       ? new Date(data.cheapestPriceDateEpoch * 1000).toLocaleDateString('en-US', {
@@ -293,37 +330,61 @@ export class GameAnalyticsComponent {
         })
       : '';
 
-    annotations['allTimeLow'] = {
-      type: 'line',
+    // Y-min: lower of (local min, all-time low) minus a couple bucks of padding
+    const localPrices = (this.lineChartData.datasets[0].data as { y: number }[]).map((p) => p.y);
+    const minLocal = localPrices.length ? Math.min(...localPrices) : allTimeLow;
+    const yMin = Math.max(0, Math.min(minLocal, allTimeLow) - 2);
+
+    const allTimeLowAnnotation = {
+      type: 'line' as const,
       yMin: allTimeLow,
       yMax: allTimeLow,
       borderColor: '#ff5252',
       borderWidth: 2,
       borderDash: [6, 4],
+      adjustScaleRange: true, // belt-and-suspenders: also asks the plugin to extend the scale
       label: {
         display: true,
         content: dateLabel
           ? `All-time low: $${allTimeLow.toFixed(2)} · ${dateLabel}`
           : `All-time low: $${allTimeLow.toFixed(2)}`,
-        position: 'end',
+        position: 'end' as const,
         backgroundColor: 'rgba(255, 82, 82, 0.95)',
         color: '#fff',
-        font: { size: 11, weight: 'bold' },
+        font: { size: 11, weight: 'bold' as const },
         padding: { x: 8, y: 4 },
         borderRadius: 4,
         yAdjust: -12,
       },
     };
 
-    const localPrices = (this.lineChartData.datasets[0].data as { y: number }[]).map((p) => p.y);
-    const minLocal = localPrices.length ? Math.min(...localPrices) : allTimeLow;
-    const minBound = Math.max(0, Math.min(minLocal, allTimeLow) - 5);
+    // Preserve patch annotations
+    const currentAnnotations = ((this.lineChartOptions.plugins?.annotation as any)?.annotations ??
+      {}) as Record<string, unknown>;
 
-    (this.lineChartOptions.scales!['y'] as { min?: number }).min = minBound;
+    // New reference all the way down → ng2-charts ngOnChanges fires
+    this.lineChartOptions = {
+      ...this.lineChartOptions,
+      scales: {
+        ...this.lineChartOptions.scales,
+        y: {
+          ...(this.lineChartOptions.scales!['y'] as any),
+          min: yMin,
+        },
+      },
+      plugins: {
+        ...this.lineChartOptions.plugins,
+        annotation: {
+          annotations: {
+            ...currentAnnotations,
+            allTimeLow: allTimeLowAnnotation,
+          },
+        },
+      },
+    };
 
     this.refreshChart();
   }
-
   private refreshChart(): void {
     queueMicrotask(() => this.chart?.update());
   }

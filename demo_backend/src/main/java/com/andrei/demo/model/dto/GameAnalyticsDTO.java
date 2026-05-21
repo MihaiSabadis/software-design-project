@@ -7,6 +7,7 @@ import java.util.List;
 @Data
 public class GameAnalyticsDTO {
     private List<PricePointDTO> priceHistory;
+    private List<PricePointDTO> pricePrediction;
     private List<PatchPointDTO> patchHistory;
 
     @Data
