@@ -14,6 +14,18 @@
 
   <div class="chart-wrapper">
     @if (isChartLoaded()) {
+
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+        <label for="predictionSelect" style="color: #a497c6; margin-right: 10px; align-self: center;">
+          Prediction Model:
+        </label>
+        <select id="predictionSelect"
+                (change)="onPredictionChange($event)"
+                style="background-color: #1c1139; color: #ff07de; border: 1px solid rgba(0, 214, 160, 0.3); border-radius: 4px; padding: 4px 8px;">
+          <option value="linear">Linear Regression</option>
+          <option value="baseline">Stable Baseline</option>
+        </select>
+      </div>
       <canvas baseChart
               [type]="'line'"
               [data]="lineChartData"

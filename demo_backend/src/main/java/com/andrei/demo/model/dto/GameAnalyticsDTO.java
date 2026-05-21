@@ -7,8 +7,10 @@ import java.util.List;
 @Data
 public class GameAnalyticsDTO {
     private List<PricePointDTO> priceHistory;
-    private List<PricePointDTO> pricePrediction;
     private List<PatchPointDTO> patchHistory;
+
+    private List<PricePointDTO> linearPrediction;
+    private List<PricePointDTO> baselinePrediction;
 
     @Data
     public static class PricePointDTO {

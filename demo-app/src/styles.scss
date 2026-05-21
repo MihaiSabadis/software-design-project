@@ -10,28 +10,15 @@ html {
     typography: Roboto,
     density: 0,
   ));
-
-  // Override Material CSS vars to match our dark theme
-  --mat-sys-surface: #0d0820;
-  --mat-sys-on-surface: #ffffff;
-  --mat-sys-surface-container: #1c1139;
-  --mat-sys-surface-container-high: #251650;
-  --mat-sys-outline: rgba(255, 255, 255, 0.15);
-  --mat-sys-primary: #00d6a0;
-  --mat-sys-on-primary: #000000;
 }
 
-body {
-  color-scheme: dark;
-  background-color: #0d0820;
-  color: #ffffff;
-  font: var(--mat-sys-body-medium);
-  margin: 0;
-  height: 100%;
-}
-
-// --- Global helpers ---
+// ==========================================
+// 1. THEME VARIABLES (DARK MODE DEFAULTS)
+// ==========================================
 :root {
+  color-scheme: dark;
+
+  // --- Custom Colors ---
   --color-bg:        #0d0820;
   --color-surface:   #1c1139;
   --color-surface-2: #251650;
@@ -39,12 +26,61 @@ body {
   --color-purple:    #a497c6;
   --color-gold:      #ffc107;
   --color-danger:    #e53935;
-  --color-border:    rgba(255, 255, 255, 0.1);
+  --color-border:    rgba(255, 255, 255, 0.15);
   --color-text:      #ffffff;
   --color-text-muted:#a497c6;
+
+  // --- Material System Overrides ---
+  // (Mapped to custom colors to ensure they stay perfectly in sync!)
+  --mat-sys-surface: var(--color-bg);
+  --mat-sys-on-surface: var(--color-text);
+  --mat-sys-surface-container: var(--color-surface);
+  --mat-sys-surface-container-high: var(--color-surface-2);
+  --mat-sys-outline: var(--color-border);
+  --mat-sys-primary: var(--color-accent);
+  --mat-sys-on-primary: #000000;
 }
 
-// Make Material form fields dark
+// ==========================================
+// 2. THEME VARIABLES (LIGHT MODE OVERRIDES)
+// ==========================================
+[data-theme="light"] {
+  color-scheme: light;
+
+  // --- Custom Colors ---
+  --color-bg:        #f4f5f7;
+  --color-surface:   #ffffff;
+  --color-surface-2: #e9eaed;
+  --color-accent:    #00b386; // Slightly darker teal for contrast on white
+  --color-purple:    #6e5ca1; // Darker purple for text readability
+  --color-gold:      #e0a800; // Darker gold
+  --color-danger:    #d32f2f;
+  --color-border:    rgba(0, 0, 0, 0.12);
+  --color-text:      #1a1a24;
+  --color-text-muted:#5a5a75;
+
+  // --- Material System Overrides ---
+  // Because the material vars above use var(--color-*), they automatically
+  // inherit the light colors! We only need to override this one:
+  --mat-sys-on-primary: #ffffff;
+}
+
+// ==========================================
+// 3. GLOBAL BASE STYLES
+// ==========================================
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font: var(--mat-sys-body-medium);
+  margin: 0;
+  height: 100%;
+  // Smooth transition when the theme toggle button is clicked
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+// ==========================================
+// 4. MATERIAL COMPONENT OVERRIDES
+// ==========================================
 .mat-mdc-form-field {
   --mdc-outlined-text-field-outline-color: var(--color-border);
   --mdc-outlined-text-field-hover-outline-color: var(--color-accent);
@@ -57,11 +93,13 @@ body {
 .mat-mdc-card {
   background-color: var(--color-surface) !important;
   color: var(--color-text) !important;
+  transition: background-color 0.3s ease, color 0.3s ease; // Smooth theme transition
 }
 
 .mat-mdc-table {
   background-color: var(--color-surface) !important;
   color: var(--color-text) !important;
+  transition: background-color 0.3s ease;
 }
 
 .mat-mdc-header-cell {
@@ -82,6 +120,7 @@ body {
   background-color: var(--color-surface) !important;
   color: var(--color-text) !important;
   border-bottom: 1px solid var(--color-border);
+  transition: background-color 0.3s ease;
 }
 
 .mat-mdc-dialog-container {

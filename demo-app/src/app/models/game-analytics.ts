@@ -11,6 +11,7 @@ export interface PatchPoint {
 
 export interface GameAnalytics {
   priceHistory: PricePoint[];
-  pricePrediction: PricePoint[];
   patchHistory: PatchPoint[];
+  linearPrediction: PricePoint[];
+  baselinePrediction: PricePoint[];
 }

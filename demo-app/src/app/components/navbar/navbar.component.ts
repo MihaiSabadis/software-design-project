@@ -2,6 +2,7 @@
 import { ChangeDetectionStrategy, Component, inject, computed } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { LoginStore } from '../../features/login/login.store';
+import { ThemeService } from '../../services/theme.service';
 
 @Component({
   selector: 'app-navbar',
@@ -13,6 +14,7 @@ import { LoginStore } from '../../features/login/login.store';
 export class NavbarComponent {
   private readonly loginStore = inject(LoginStore);
   private readonly router = inject(Router);
+  protected readonly themeService = inject(ThemeService);
 
   protected readonly role = this.loginStore.role;
   protected readonly isAdmin = computed(() => this.loginStore.role() === 'ADMIN');

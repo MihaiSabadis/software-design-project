@@ -15,8 +15,9 @@ import { ChartConfiguration, ChartOptions, Chart, registerables } from 'chart.js
 import annotationPlugin from 'chartjs-plugin-annotation';
 import { VideoGameService } from '../../services/video-game.service';
 import { ReviewService } from '../../services/review.service';
+import {ThemeService} from "../../services/theme.service";
 import { Review } from '../../models/review.model';
-import { GameAnalytics } from '../../models/game-analytics';
+import { GameAnalytics, PricePoint } from '../../models/game-analytics';
 import { ExternalGameData, StoreDeal } from '../../models/external-game-data.model';
 import 'chartjs-adapter-date-fns';
 
@@ -40,6 +41,7 @@ export class GameAnalyticsComponent {
 
   private readonly gameService = inject(VideoGameService);
   private readonly reviewService = inject(ReviewService);
+  private readonly themeService = inject(ThemeService);
 
   @ViewChild(BaseChartDirective) private chart?: BaseChartDirective;
 
@@ -48,6 +50,8 @@ export class GameAnalyticsComponent {
   protected readonly isReviewChartLoaded = signal(false);
   protected readonly externalData = signal<ExternalGameData | null>(null);
   protected readonly isExternalLoaded = signal(false);
+  protected selectedPrediction = 'linear';
+  private currentAnalyticsData: GameAnalytics | null = null;
 
   protected readonly hasAnyExternalData = computed(() => {
     const ext = this.externalData();
@@ -198,6 +202,11 @@ export class GameAnalyticsComponent {
       this.loadExternalData(id);
       this.loadReviews(id);
     });
+
+    effect(() => {
+      this.themeService.isDarkMode();
+      this.refreshChart();
+    });
   }
 
   // ── Data loading ──────────────────────────────────────────────────────
@@ -261,6 +270,9 @@ export class GameAnalyticsComponent {
   // ============================================================
 
   private applyLocalData(data: GameAnalytics): void {
+
+    this.currentAnalyticsData = data;
+
     // 1. Historical prices
     this.lineChartData.datasets[0].data = data.priceHistory.map((p) => ({
       x: p.date as unknown as number,
@@ -268,10 +280,7 @@ export class GameAnalyticsComponent {
     })) as ChartConfiguration<'line'>['data']['datasets'][number]['data'];
 
     // 2. Prediction line
-    this.lineChartData.datasets[1].data = (data.pricePrediction ?? []).map((p) => ({
-      x: p.date as unknown as number,
-      y: p.price,
-    })) as ChartConfiguration<'line'>['data']['datasets'][number]['data'];
+    this.updatePredictionLine();
 
     // 3. Build patch annotations, preserving any allTimeLow already added
     const patchAnnotations: Record<string, unknown> = {};
@@ -385,6 +394,35 @@ export class GameAnalyticsComponent {
 
     this.refreshChart();
   }
+
+  private updatePredictionLine(): void {
+    if (!this.currentAnalyticsData) return;
+
+    let predictionData: PricePoint[] = [];
+
+    if (this.selectedPrediction === 'baseline' && this.currentAnalyticsData.baselinePrediction) {
+      predictionData = this.currentAnalyticsData.baselinePrediction;
+      this.lineChartData.datasets[1].label = 'Predicted Trend (Baseline)';
+    } else if (this.currentAnalyticsData.linearPrediction) {
+      predictionData = this.currentAnalyticsData.linearPrediction;
+      this.lineChartData.datasets[1].label = 'Predicted Trend (Linear)';
+    }
+
+    this.lineChartData.datasets[1].data = predictionData.map((p) => ({
+      x: p.date as unknown as number,
+      y: p.price,
+    })) as ChartConfiguration<'line'>['data']['datasets'][number]['data'];
+
+    this.lineChartData = { ...this.lineChartData };
+    this.refreshChart();
+  }
+
+  protected onPredictionChange(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    this.selectedPrediction = selectElement.value;
+    this.updatePredictionLine();
+  }
+
   private refreshChart(): void {
     queueMicrotask(() => this.chart?.update());
   }
