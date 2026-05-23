@@ -138,7 +138,6 @@
 
 .empty-state { color: var(--color-text-muted); font-style: italic; font-size: 0.9rem; }
 
-// ── Patch Management ──
 .patch-management {
   margin-top: 1.5rem;
 
@@ -220,7 +219,6 @@
 
   &:focus { outline: none; border-color: var(--color-accent); }
 
-  // Date picker dark fix
   &[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) opacity(0.5); }
 }
 
@@ -254,7 +252,6 @@
   &:hover { border-color: var(--color-text-muted); }
 }
 
-// Patch list
 .patch-list {
   display: flex;
   flex-direction: column;

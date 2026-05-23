@@ -5,7 +5,6 @@
 
     <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" novalidate>
 
-      <!-- Role selector -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>I am a...</mat-label>
         <mat-select formControlName="role" required>
@@ -14,7 +13,6 @@
         </mat-select>
       </mat-form-field>
 
-      <!-- Studio code — only for MODERATOR -->
       @if (isModerator()) {
         <div class="studio-code-banner">
           <span class="banner-icon" aria-hidden="true">🏢</span>
@@ -44,7 +42,6 @@
         </mat-form-field>
       }
 
-      <!-- Common fields -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Full Name</mat-label>
         <input matInput formControlName="name" autocomplete="name" required />

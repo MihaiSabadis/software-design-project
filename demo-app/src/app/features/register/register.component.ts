@@ -1,4 +1,3 @@
-// demo-app/src/app/features/register/register.component.ts
 import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';

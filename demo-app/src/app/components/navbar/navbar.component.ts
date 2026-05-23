@@ -1,4 +1,3 @@
-// demo-app/src/app/components/navbar/navbar.component.ts
 import { ChangeDetectionStrategy, Component, inject, computed } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { LoginStore } from '../../features/login/login.store';

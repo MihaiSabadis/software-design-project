@@ -1,4 +1,3 @@
-// demo-app/src/app/components/video-game-form-dialog/game-form-dialog.component.ts
 import {
   ChangeDetectionStrategy,
   Component,
@@ -28,14 +27,7 @@ export class GameFormDialogComponent implements OnInit {
   @Output() closeDialog = new EventEmitter<void>();
   @Output() saveGame = new EventEmitter<VideoGameCreateDTO>();
 
-  /** The game to edit (null when adding) */
   @Input() gameToEdit: VideoGame | null = null;
-
-  /**
-   * If the logged-in user is a moderator, pass their studio here.
-   * The studio dropdown will be locked to this value.
-   * Leave null for admins (they see the full dropdown).
-   */
   @Input() moderatorStudio: Studio | null = null;
 
   private readonly studioService = inject(StudioService);
@@ -49,7 +41,6 @@ export class GameFormDialogComponent implements OnInit {
     coverImageUrl: '',
   };
 
-  /** True when the studio field should be locked (moderator OR edit mode) */
   get studioLocked(): boolean {
     return this.moderatorStudio !== null || this.gameToEdit !== null;
   }
@@ -62,7 +53,6 @@ export class GameFormDialogComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.gameToEdit) {
-      // Editing — prefill from existing game
       this.form = {
         title: this.gameToEdit.title,
         price: this.gameToEdit.price,
@@ -70,11 +60,9 @@ export class GameFormDialogComponent implements OnInit {
         coverImageUrl: this.gameToEdit.coverImageUrl ?? '',
       };
     } else if (this.moderatorStudio) {
-      // Moderator adding — lock to their studio
       this.form.studioId = this.moderatorStudio.id ?? '';
     }
 
-    // Load studios for admin full dropdown
     if (!this.studioLocked) {
       this.studioService.getAll().subscribe({
         next: (data) => this.studios.set(data),

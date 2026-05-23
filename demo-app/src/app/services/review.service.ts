@@ -8,7 +8,6 @@ import { ReviewCreateDTO } from '../models/review-create.dto';
 export class ReviewService {
   private readonly http = inject(HttpClient);
 
-  // Base URL is clean!
   private readonly apiUrl = 'http://localhost:8080/reviews';
 
   getReviewsForGame(gameId: string): Observable<Review[]> {
@@ -22,12 +21,10 @@ export class ReviewService {
   }
 
   updateReview(reviewId: string, reviewData: ReviewCreateDTO): Observable<Review> {
-    // FIX: Cleaning up the update path
     return this.http.put<Review>(`${this.apiUrl}/${reviewId}`, reviewData);
   }
 
   deleteReview(reviewId: string): Observable<String> {
-    // FIX: Cleaning up the delete path
     return this.http.delete(`${this.apiUrl}/${reviewId}`, {responseType: 'text'});
   }
 }

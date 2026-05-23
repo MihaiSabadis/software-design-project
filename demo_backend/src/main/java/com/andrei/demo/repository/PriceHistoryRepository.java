@@ -9,6 +9,5 @@ import java.util.UUID;
 
 @Repository
 public interface PriceHistoryRepository extends JpaRepository<PriceHistory, UUID> {
-    // Aducem prețurile în ordine cronologică (ASC) pentru a arăta corect pe grafic
     List<PriceHistory> findByVideoGameIdOrderByRecordedAtAsc(UUID videoGameId);
 }

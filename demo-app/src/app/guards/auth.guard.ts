@@ -20,7 +20,6 @@ export const guestGuard: CanActivateFn = () => {
       return router.createUrlTree(['/player']);
     }
   }
-  //return loginStore.isAuthenticated() ? router.createUrlTree(['/people']) : true;
   return true;
 };
 

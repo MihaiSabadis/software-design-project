@@ -23,7 +23,6 @@ public class CheapSharkService {
     private static final Logger log = LoggerFactory.getLogger(CheapSharkService.class);
     private static final String BASE_URL = "https://www.cheapshark.com/api/1.0";
 
-    // CheapShark store IDs we care about for the "Buy Now" tiles.
     private static final Map<String, String> STORE_NAMES = Map.of(
             "1", "Steam",
             "7", "GOG",
@@ -74,11 +73,6 @@ public class CheapSharkService {
         }
     }
 
-    // ──────────────────────────────────────────────────────────────
-    // Look up a game's CheapShark ID by title.
-    // Returns Optional.empty() if not found OR if anything goes wrong.
-    // Every call logs the URL it hit and (on failure) the full exception.
-    // ──────────────────────────────────────────────────────────────
     public Optional<String> findCheapSharkGameId(String title) {
         if (title == null || title.isBlank()) {
             log.warn("[CheapShark] findCheapSharkGameId called with blank title — skipping.");
@@ -90,7 +84,7 @@ public class CheapSharkService {
                 .queryParam("title", title)
                 .queryParam("limit", 3)
                 .build()
-                .encode()      // <-- proper URL encoding of spaces / special chars
+                .encode()
                 .toUri();
 
         log.info("[CheapShark] GET {}", uri);
@@ -143,9 +137,6 @@ public class CheapSharkService {
         }
     }
 
-    // ──────────────────────────────────────────────────────────────
-    // Given a CheapShark gameID, fill in the rest of the DTO.
-    // ──────────────────────────────────────────────────────────────
     public void enrichWithCheapSharkData(String csGameId, ExternalGameDataDTO dto) {
         URI uri = UriComponentsBuilder
                 .fromUriString(BASE_URL + "/games")
@@ -171,7 +162,6 @@ public class CheapSharkService {
 
             JsonNode root = objectMapper.readTree(body);
 
-            // info block: { info: { title, steamAppID, thumb }, cheapestPriceEver: {...}, deals: [...] }
             JsonNode info = root.path("info");
             JsonNode cheapest = root.path("cheapestPriceEver");
             JsonNode deals = root.path("deals");
@@ -183,8 +173,6 @@ public class CheapSharkService {
                 if (epoch > 0) dto.setCheapestPriceDateEpoch(epoch);
             }
 
-            // Steam app lookup for Metacritic + Steam rating happens via /deals endpoint.
-            // Pull the cheapest current deal's full record to grab those fields.
             if (deals.isArray() && !deals.isEmpty()) {
                 List<StoreDealDTO> mapped = new ArrayList<>();
                 for (JsonNode d : deals) {
@@ -208,8 +196,6 @@ public class CheapSharkService {
                         mapped.size(), deals.size());
             }
 
-            // Metacritic / Steam rating: take from the cheapest deal record.
-            // The /deals?id=... endpoint has these fields in `gameInfo`.
             if (deals.isArray() && !deals.isEmpty()) {
                 String firstDealId = deals.get(0).path("dealID").asText(null);
                 if (firstDealId != null) {

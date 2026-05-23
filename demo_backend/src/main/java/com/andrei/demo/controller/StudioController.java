@@ -1,4 +1,3 @@
-// demo_backend/src/main/java/com/andrei/demo/controller/StudioController.java
 package com.andrei.demo.controller;
 
 import com.andrei.demo.model.Studio;

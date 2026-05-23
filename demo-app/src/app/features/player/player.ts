@@ -1,4 +1,3 @@
-// demo-app/src/app/features/player/player.ts
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PersonService } from '../../services/person.service';

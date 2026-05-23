@@ -1,4 +1,3 @@
-// demo_backend/src/main/java/com/andrei/demo/service/GamePatchService.java
 package com.andrei.demo.service;
 
 import com.andrei.demo.model.GamePatch;
@@ -32,8 +31,6 @@ public class GamePatchService {
         this.personRepository = personRepository;
     }
 
-    // ── Studio ownership check ────────────────────────────────────────────
-
     private void assertCanManageGame(VideoGame game) {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null) return;
@@ -53,7 +50,6 @@ public class GamePatchService {
         }
     }
 
-    // ── CRUD ─────────────────────────────────────────────────────────────
 
     @Transactional
     public GamePatchResponseDTO addPatchToGame(UUID gameId, GamePatchCreateDTO patchDTO) {
@@ -95,7 +91,6 @@ public class GamePatchService {
         gamePatchRepository.deleteById(patchId);
     }
 
-    // ── Mapper ────────────────────────────────────────────────────────────
 
     private GamePatchResponseDTO mapToDTO(GamePatch patch) {
         GamePatchResponseDTO dto = new GamePatchResponseDTO();

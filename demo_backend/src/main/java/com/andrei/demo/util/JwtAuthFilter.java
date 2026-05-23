@@ -41,9 +41,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         boolean isForgotPass    = path.startsWith("/person/forgot-password");
         boolean isResetPass     = path.startsWith("/person/reset-password");
 
-        // POST /person is public registration — but only skip auth when
-        // no token is present. If a token IS present (admin using the panel),
-        // fall through so the Security context gets populated.
         boolean isPublicRegistration =
                 "/person".equals(path) && "POST".equalsIgnoreCase(method) && !hasToken;
 

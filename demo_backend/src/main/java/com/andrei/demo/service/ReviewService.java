@@ -91,11 +91,9 @@ public class ReviewService {
         return reviewRepository.save(existingReview);
     }
 
-    // UPDATE THIS METHOD to return the new DTO:
     public List<ReviewResponseDTO> getReviewsForGame(UUID gameId) {
         List<Review> reviews = reviewRepository.findByGameId(gameId);
 
-        // Translate each Review entity into a DTO
         return reviews.stream().map(review -> {
             ReviewResponseDTO dto = new ReviewResponseDTO();
             dto.setId(review.getId());
@@ -103,7 +101,6 @@ public class ReviewService {
             dto.setComment(review.getComment());
             dto.setGameId(review.getGame().getId());
 
-            // Extract the hidden Person data safely!
             dto.setAuthorId(review.getAuthor().getId());
             dto.setAuthorName(review.getAuthor().getName());
 

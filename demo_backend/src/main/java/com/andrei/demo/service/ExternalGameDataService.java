@@ -1,4 +1,3 @@
-// demo_backend/src/main/java/com/andrei/demo/service/ExternalGameDataService.java
 package com.andrei.demo.service;
 
 import com.andrei.demo.model.VideoGame;

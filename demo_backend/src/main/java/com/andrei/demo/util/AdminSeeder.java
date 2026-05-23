@@ -11,7 +11,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Component
-@Order(1) // Run before DataSeeder
+@Order(1)
 @AllArgsConstructor
 @Slf4j
 public class AdminSeeder implements CommandLineRunner {

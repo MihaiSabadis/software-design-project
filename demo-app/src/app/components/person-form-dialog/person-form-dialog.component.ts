@@ -1,4 +1,3 @@
-// demo-app/src/app/components/person-form-dialog/person-form-dialog.component.ts
 import {
   ChangeDetectionStrategy,
   Component,
@@ -80,7 +79,6 @@ export class PersonFormDialogComponent implements OnInit {
       this.form.controls.password.updateValueAndValidity();
     }
 
-    // Keep signal in sync with form
     this.form.controls.role.valueChanges.subscribe((role) => {
       this.selectedRole.set(role);
       const codeCtrl = this.form.controls.studioCode;

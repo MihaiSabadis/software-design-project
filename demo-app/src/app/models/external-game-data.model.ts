@@ -1,4 +1,3 @@
-
 export interface StoreDeal {
   storeName: string;
   price: string;
@@ -10,7 +9,7 @@ export interface StoreDeal {
 export interface PatchNote {
   title: string;
   url: string;
-  date: number; // epoch seconds
+  date: number;
   contents: string;
 }
 

@@ -1,4 +1,3 @@
-// demo_backend/src/main/java/com/andrei/demo/controller/VideoGameController.java
 package com.andrei.demo.controller;
 
 import com.andrei.demo.model.VideoGame;
@@ -57,7 +56,6 @@ public class VideoGameController {
         return ResponseEntity.ok(videoGameService.addVideoGame(gameDTO));
     }
 
-    // Change only the PUT endpoint:
     @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATOR')")
     @PutMapping("/{uuid}")
     public ResponseEntity<?> updateVideoGame(@PathVariable UUID uuid,
@@ -84,8 +82,6 @@ public class VideoGameController {
     public ResponseEntity<GameAnalyticsDTO> getGameAnalytics(@PathVariable UUID id) {
         return ResponseEntity.ok(gameAnalyticsService.getAnalyticsForGame(id));
     }
-
-    // Add this injection and endpoint to the existing controller:
 
     private final ExternalGameDataService externalGameDataService;
 

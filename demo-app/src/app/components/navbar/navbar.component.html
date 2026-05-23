@@ -1,14 +1,11 @@
 <nav class="navbar" aria-label="Main navigation">
 
-  <!-- Brand -->
   <a class="brand" routerLink="/games" aria-label="Go to games">
     <span class="brand-icon" aria-hidden="true">🎮</span>
     <span class="brand-name">PlayWorthy</span>
   </a>
 
-  <!-- Nav links -->
   <ul class="nav-links" role="list">
-
     <li>
       <a routerLink="/games"
          routerLinkActive="active"
@@ -47,11 +44,10 @@
 
   </ul>
 
-  <!-- Right side -->
   <div class="nav-right">
 
     <button (click)="themeService.toggleTheme()"
-            style="background: none; border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-right: 15px;">
+            style="background: none; border: 1px solid var(--color-border); color: var(--color-text); padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-right: 15px;">
       {{ themeService.isDarkMode() ? '☀️ Light Mode' : '🌙 Dark Mode' }}
     </button>
     <span class="role-badge" [class]="'role-' + role()?.toLowerCase()">

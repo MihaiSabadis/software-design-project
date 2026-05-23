@@ -1,4 +1,3 @@
-// demo-app/src/app/features/video-game-list/video-game-list-page.component.ts
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -24,7 +23,6 @@ export class VideoGameListPageComponent implements OnInit {
   private readonly personService = inject(PersonService);
   readonly loginStore = inject(LoginStore);
 
-  // Game list state
   games = signal<VideoGame[]>([]);
   titleSearchString = '';
   developerSearchString = '';
@@ -32,11 +30,9 @@ export class VideoGameListPageComponent implements OnInit {
   sortBy = 'title';
   sortDir = 'asc';
 
-  // Dialog state
   isDialogOpen = signal(false);
   gameBeingEdited = signal<VideoGame | null>(null);
 
-  // Moderator's studio — null for admin/player
   moderatorStudio = signal<Studio | null>(null);
 
   get canAddGame(): boolean {
@@ -46,8 +42,6 @@ export class VideoGameListPageComponent implements OnInit {
   ngOnInit(): void {
     this.loadGames();
 
-    // If the user is a moderator, fetch their studio so we can
-    // pre-fill the game form and filter edit/delete buttons.
     if (this.loginStore.role() === 'MODERATOR') {
       const userId = this.loginStore.userId();
       if (userId) {

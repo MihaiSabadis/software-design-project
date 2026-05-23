@@ -1,4 +1,3 @@
-// demo-app/src/app/components/video-game-card/game-card.component.ts
 import {
   ChangeDetectionStrategy,
   Component,

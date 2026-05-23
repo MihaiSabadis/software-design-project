@@ -49,7 +49,6 @@ public class PersonService {
         String hashedPassword = passwordUtil.hashPassword(personDTO.getPassword());
         person.setPassword(hashedPassword);
 
-        //link moderator(if) to studio
         if (personDTO.getRole() == Role.MODERATOR) {
             if (personDTO.getStudioCode() == null || personDTO.getStudioCode().isBlank()) {
                 throw new ValidationException("Moderators must provide a valid studio code.");
@@ -73,7 +72,6 @@ public class PersonService {
         }
         Person existingPerson = personOptional.get();
 
-        // check if they are trying to change their email to one that belongs to someone else
         if (!existingPerson.getEmail().equals(person.getEmail()) &&
                 personRepository.existsByEmail(person.getEmail())) {
             throw new ValidationException("Email already exists!");

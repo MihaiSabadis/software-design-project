@@ -2,28 +2,26 @@
   display: flex;
   flex-direction: column;
 
-  /* 1. Micșorăm lățimea maximă (era 280px) */
   max-width: 240px;
   margin: 0 auto;
 
-  background-color: #1c1139;
-  border-radius: 10px; /* Colțuri ușor mai puțin rotunjite pentru un aspect mai "sharp" la dimensiuni mici */
+  background-color: var(--color-surface);
+  border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   height: 100%;
-  color: #ffffff;
+  color: var(--color-text);
 
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
   }
 
-  /* 2. Reducem zona imaginii (era 320px) */
   .game-cover-container {
     width: 100%;
     height: 240px;
-    background-color: #120b29;
+    background-color: var(--color-bg);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -40,7 +38,7 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 1rem; /* Reducem padding-ul interior (era 1.25rem) */
+    padding: 1rem;
     flex-grow: 1;
   }
 
@@ -49,15 +47,15 @@
 
     h3 {
       margin: 0 0 0.3rem 0;
-      font-size: 1.1rem; /* Text mai mic (era 1.2rem) */
+      font-size: 1.1rem;
       font-weight: 700;
       line-height: 1.2;
     }
 
     .developer {
       margin: 0;
-      color: #00d6a0;
-      font-size: 0.75rem; /* Text mai mic (era 0.9rem) */
+      color: var(--color-accent);
+      font-size: 0.75rem;
       text-transform: uppercase;
       font-weight: 700;
       letter-spacing: 0.5px;
@@ -69,15 +67,15 @@
 
     .price-label {
       display: block;
-      color: #a497c6;
-      font-size: 0.75rem; /* Text mai mic (era 0.85rem) */
+      color: var(--color-text-muted);
+      font-size: 0.75rem;
       margin-bottom: 0;
       font-weight: 600;
     }
 
     .price {
-      font-size: 1.4rem; /* Preț mai mic (era 1.7rem) */
-      color: #ffffff;
+      font-size: 1.4rem;
+      color: var(--color-text);
       font-weight: 800;
       margin: 0;
     }
@@ -90,8 +88,8 @@
 
     button {
       flex: 1;
-      padding: 0.5rem 0; /* Butoane mai subțiri (era 0.6rem) */
-      font-size: 0.85rem; /* Text butoane mai mic */
+      padding: 0.5rem 0;
+      font-size: 0.85rem;
       border: none;
       border-radius: 6px;
       font-weight: bold;
@@ -99,17 +97,17 @@
     }
 
     .btn-details {
-      background-color: rgba(255, 255, 255, 0.1);
-      color: #ffffff;
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      background-color: var(--color-surface-2);
+      color: var(--color-text);
+      border: 1px solid var(--color-border);
     }
 
-    .btn-primary { background-color: #ffc107; color: #000000; }
-    .btn-danger { background-color: #dc3545; color: #ffffff; }
+    .btn-primary { background-color: var(--color-gold); color: #000000; }
+    .btn-danger { background-color: var(--color-danger); color: #ffffff; }
     .btn-remove {
       flex: 1;
       background: transparent;
-      border: 1px solid rgba(229, 57, 53, 0.4);
+      border: 1px solid var(--color-danger);
       color: #ff6b6b;
       border-radius: 6px;
       font-size: 0.85rem;

@@ -12,13 +12,9 @@ html {
   ));
 }
 
-// ==========================================
-// 1. THEME VARIABLES (DARK MODE DEFAULTS)
-// ==========================================
 :root {
   color-scheme: dark;
 
-  // --- Custom Colors ---
   --color-bg:        #0d0820;
   --color-surface:   #1c1139;
   --color-surface-2: #251650;
@@ -30,8 +26,6 @@ html {
   --color-text:      #ffffff;
   --color-text-muted:#a497c6;
 
-  // --- Material System Overrides ---
-  // (Mapped to custom colors to ensure they stay perfectly in sync!)
   --mat-sys-surface: var(--color-bg);
   --mat-sys-on-surface: var(--color-text);
   --mat-sys-surface-container: var(--color-surface);
@@ -41,33 +35,23 @@ html {
   --mat-sys-on-primary: #000000;
 }
 
-// ==========================================
-// 2. THEME VARIABLES (LIGHT MODE OVERRIDES)
-// ==========================================
 [data-theme="light"] {
   color-scheme: light;
 
-  // --- Custom Colors ---
   --color-bg:        #f4f5f7;
   --color-surface:   #ffffff;
   --color-surface-2: #e9eaed;
-  --color-accent:    #00b386; // Slightly darker teal for contrast on white
-  --color-purple:    #6e5ca1; // Darker purple for text readability
-  --color-gold:      #e0a800; // Darker gold
+  --color-accent:    #00b386;
+  --color-purple:    #6e5ca1;
+  --color-gold:      #e0a800;
   --color-danger:    #d32f2f;
   --color-border:    rgba(0, 0, 0, 0.12);
   --color-text:      #1a1a24;
   --color-text-muted:#5a5a75;
 
-  // --- Material System Overrides ---
-  // Because the material vars above use var(--color-*), they automatically
-  // inherit the light colors! We only need to override this one:
   --mat-sys-on-primary: #ffffff;
 }
 
-// ==========================================
-// 3. GLOBAL BASE STYLES
-// ==========================================
 body {
   background-color: var(--color-bg);
   color: var(--color-text);
@@ -78,9 +62,6 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-// ==========================================
-// 4. MATERIAL COMPONENT OVERRIDES
-// ==========================================
 .mat-mdc-form-field {
   --mdc-outlined-text-field-outline-color: var(--color-border);
   --mdc-outlined-text-field-hover-outline-color: var(--color-accent);
@@ -129,13 +110,11 @@ body {
   --mdc-dialog-supporting-text-color: var(--color-text-muted);
 }
 
-// Snackbar
 .error-snackbar {
   background: var(--color-danger);
   color: #fff;
 }
 
-// Scrollbar
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--color-bg); }
 ::-webkit-scrollbar-thumb { background: var(--color-surface-2); border-radius: 3px; }

@@ -1,4 +1,3 @@
-// demo-app/src/app/app.ts
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { LoginStore } from './features/login/login.store';

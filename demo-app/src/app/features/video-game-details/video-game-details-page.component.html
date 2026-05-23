@@ -18,10 +18,8 @@
       }
     </section>
 
-    <!-- Analytics chart + CheapShark data -->
     <app-game-analytics [gameId]="game.id"></app-game-analytics>
 
-    <!-- ── PATCH MANAGEMENT (Admin / Moderator only) ── -->
     @if (canManagePatches) {
       <section class="patch-management">
         <div class="section-title-row">
@@ -31,7 +29,6 @@
           }
         </div>
 
-        <!-- Add patch form -->
         @if (isPatchFormOpen) {
           <div class="patch-form-card">
             <h3>New Patch Entry</h3>
@@ -87,7 +84,6 @@
           </div>
         }
 
-        <!-- Existing patches list -->
         @if (patches.length > 0) {
           <div class="patch-list">
             @for (patch of patches; track patch.id) {
@@ -115,7 +111,6 @@
       </section>
     }
 
-    <!-- ── REVIEW SECTION ── -->
     <section class="smart-area">
       <h2>My Review</h2>
 
@@ -167,7 +162,6 @@
       }
     </section>
 
-    <!-- ── COMMUNITY REVIEWS ── -->
     <section class="community-section">
       <h2>Community Reviews</h2>
 

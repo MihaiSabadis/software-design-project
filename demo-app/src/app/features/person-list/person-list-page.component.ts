@@ -1,4 +1,3 @@
-// Remove MatToolbar from imports array, add RouterLink for the studios button
 import { ChangeDetectionStrategy, Component, DestroyRef, effect, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';

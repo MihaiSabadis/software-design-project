@@ -15,14 +15,13 @@ public class LinearRegressionStrategy implements PricePredictionStrategy {
     @Override
     public List<PricePointDTO> predict(List<PricePointDTO> prices, int daysIntoFuture, int intervalDays) {
         if (prices == null || prices.size() < 2) {
-            return new ArrayList<>(); // Not enough data
+            return new ArrayList<>();
         }
 
         int n = prices.size();
         double sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
 
-        // Use the first date as the base (x=0) to keep numbers manageable
-        double x0 = prices.get(0).getDate().toEpochDay();
+        double x0 = prices.getFirst().getDate().toEpochDay();
 
         for (PricePointDTO p : prices) {
             double x = p.getDate().toEpochDay() - x0;
@@ -34,25 +33,23 @@ public class LinearRegressionStrategy implements PricePredictionStrategy {
         }
 
         double denom = n * sumXX - sumX * sumX;
-        if (denom == 0) return new ArrayList<>(); // Avoid division by zero if all dates are the same
+        if (denom == 0) return new ArrayList<>();
 
         double slope = (n * sumXY - sumX * sumY) / denom;
         double intercept = (sumY - slope * sumX) / n;
 
         List<PricePointDTO> predictions = new ArrayList<>();
-        var lastHistorical = prices.get(prices.size() - 1);
+        var lastHistorical = prices.getLast();
 
-        // 1) Anchor point so the lines meet
         predictions.add(new PricePointDTO(lastHistorical.getDate(), lastHistorical.getPrice()));
 
-        // 2) Future predictions
         LocalDate lastDate = lastHistorical.getDate();
         for (int i = intervalDays; i <= daysIntoFuture; i += intervalDays) {
             LocalDate futureDate = lastDate.plusDays(i);
             double xFuture = futureDate.toEpochDay() - x0;
             double predicted = slope * xFuture + intercept;
 
-            predicted = Math.max(0, predicted); // Never negative
+            predicted = Math.max(0, predicted);
             predicted = Math.round(predicted * 100.0) / 100.0;
 
             predictions.add(new PricePointDTO(futureDate, predicted));

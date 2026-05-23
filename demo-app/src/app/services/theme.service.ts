@@ -4,17 +4,14 @@ import { Injectable, signal, effect } from '@angular/core';
   providedIn: 'root',
 })
 export class ThemeService {
-  // Signal to track the current theme (default to dark)
   readonly isDarkMode = signal<boolean>(true);
 
   constructor() {
-    // 1. Check local storage on initialization
     const savedTheme = localStorage.getItem('app-theme');
     if (savedTheme === 'light') {
       this.isDarkMode.set(false);
     }
 
-    // 2. React to signal changes: Update DOM and LocalStorage
     effect(() => {
       const dark = this.isDarkMode();
       if (dark) {

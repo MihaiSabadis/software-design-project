@@ -1,4 +1,3 @@
-// demo-app/src/app/components/game-analytics/game-analytics.component.ts
 import {
   ChangeDetectionStrategy,
   Component,
@@ -45,7 +44,6 @@ export class GameAnalyticsComponent {
 
   @ViewChild(BaseChartDirective) private chart?: BaseChartDirective;
 
-  // ── State ─────────────────────────────────────────────────────────────
   protected readonly isChartLoaded = signal(false);
   protected readonly isReviewChartLoaded = signal(false);
   protected readonly externalData = signal<ExternalGameData | null>(null);
@@ -92,42 +90,39 @@ export class GameAnalyticsComponent {
     }));
   });
 
-  // ── Chart config ──────────────────────────────────────────────────────
-
   barChartData: ChartConfiguration<'bar'>['data'] = {
     labels: ['1 Star', '2 Stars', '3 Stars', '4 Stars', '5 Stars'],
     datasets: [
       {
-        data: [0, 0, 0, 0, 0], // This will hold our review counts
+        data: [0, 0, 0, 0, 0],
         label: 'Reviews',
-        // Optional: Color code the bars from red (bad) to green (good)
         backgroundColor: ['#ff4d4f', '#ff7a45', '#ffa940', '#fadb14', '#00d6a0'],
-        borderRadius: 4, // Rounded corners on the bars
+        borderRadius: 4,
       },
     ],
   };
 
-  barChartOptions: ChartOptions<'bar'> = {
+  barChartOptions: ChartOptions<'bar'> = ({
     responsive: true,
     maintainAspectRatio: false,
     color: '#ffffff',
     scales: {
       x: {
-        grid: { display: false }, // Hide vertical grid lines for a cleaner look
+        grid: { display: false },
         ticks: { color: '#a497c6' },
       },
       y: {
         grid: { color: 'rgba(255,255,255,0.06)' },
         ticks: {
           color: '#a497c6',
-          stepSize: 1, // Reviews are whole numbers, so steps should be 1
+          stepSize: 1,
         },
       },
     },
     plugins: {
-      legend: { display: false }, // Hide the legend since we only have one dataset
+      legend: { display: false },
     },
-  };
+  });
 
   protected lineChartData: ChartConfiguration<'line'>['data'] = {
     labels: [],
@@ -204,12 +199,59 @@ export class GameAnalyticsComponent {
     });
 
     effect(() => {
-      this.themeService.isDarkMode();
+      const isDark = this.themeService.isDarkMode();
+
+      const textColor = isDark ? '#ffffff' : '#1c1139';
+      const mutedColor = isDark ? '#a497c6' : '#6b6385';
+      const gridLines = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
+      const tooltipBg = isDark ? '#1c1139' : '#ffffff';
+
+      this.barChartOptions = {
+        ...this.barChartOptions,
+        color: textColor,
+        scales: {
+          x: { ...this.barChartOptions.scales?.['x'], ticks: { color: mutedColor } },
+          y: {
+            ...this.barChartOptions.scales?.['y'],
+            grid: { color: gridLines },
+            ticks: { color: mutedColor, stepSize: 1 },
+          },
+        },
+      };
+
+      this.lineChartOptions = {
+        ...this.lineChartOptions,
+        color: textColor,
+        scales: {
+          x: {
+            ...this.lineChartOptions.scales?.['x'],
+            grid: { color: gridLines },
+            ticks: { color: mutedColor },
+          },
+          y: {
+            ...this.lineChartOptions.scales?.['y'],
+            grid: { color: gridLines },
+            ticks: { color: mutedColor, callback: (v) => '$' + v },
+          },
+        },
+        plugins: {
+          ...this.lineChartOptions.plugins,
+          legend: {
+            labels: { color: textColor },
+          },
+          tooltip: {
+            ...this.lineChartOptions.plugins?.tooltip,
+            backgroundColor: tooltipBg,
+            titleColor: textColor,
+            bodyColor: mutedColor,
+          },
+        },
+      };
+
       this.refreshChart();
     });
   }
 
-  // ── Data loading ──────────────────────────────────────────────────────
   private loadAnalytics(id: string): void {
     this.gameService.getGameAnalytics(id).subscribe({
       next: (data) => {
@@ -240,7 +282,7 @@ export class GameAnalyticsComponent {
       },
       error: (err) => {
         console.error('Failed to load reviews for chart', err);
-        this.isReviewChartLoaded.set(true); // Stop the loading spinner even if it fails
+        this.isReviewChartLoaded.set(true);
       },
     });
   }
@@ -249,7 +291,6 @@ export class GameAnalyticsComponent {
     const counts = [0, 0, 0, 0, 0];
 
     reviews.forEach((review) => {
-      // Assuming review.rating is a number from 1 to 5
       const ratingIndex = Math.floor(review.score) - 1;
 
       if (ratingIndex >= 0 && ratingIndex <= 4) {
@@ -259,30 +300,19 @@ export class GameAnalyticsComponent {
 
     this.barChartData.datasets[0].data = counts;
 
-    // Create a new object reference so Angular detects the change and triggers Chart.js to re-render
     this.barChartData = { ...this.barChartData };
   }
 
-  // ── Chart updates ─────────────────────────────────────────────────────
-  // ============================================================
-  // Replace these two methods in game-analytics.component.ts
-  // (everything else in the file stays the same)
-  // ============================================================
-
   private applyLocalData(data: GameAnalytics): void {
-
     this.currentAnalyticsData = data;
 
-    // 1. Historical prices
     this.lineChartData.datasets[0].data = data.priceHistory.map((p) => ({
       x: p.date as unknown as number,
       y: p.price,
     })) as ChartConfiguration<'line'>['data']['datasets'][number]['data'];
 
-    // 2. Prediction line
     this.updatePredictionLine();
 
-    // 3. Build patch annotations, preserving any allTimeLow already added
     const patchAnnotations: Record<string, unknown> = {};
     data.patchHistory.forEach((patch, i) => {
       patchAnnotations[`patch${i}`] = {
@@ -309,7 +339,6 @@ export class GameAnalyticsComponent {
       {}) as Record<string, unknown>;
     const allTimeLowExisting = existing['allTimeLow'];
 
-    // New reference for both data and options → ng2-charts picks up the change
     this.lineChartData = { ...this.lineChartData };
     this.lineChartOptions = {
       ...this.lineChartOptions,
@@ -339,7 +368,6 @@ export class GameAnalyticsComponent {
         })
       : '';
 
-    // Y-min: lower of (local min, all-time low) minus a couple bucks of padding
     const localPrices = (this.lineChartData.datasets[0].data as { y: number }[]).map((p) => p.y);
     const minLocal = localPrices.length ? Math.min(...localPrices) : allTimeLow;
     const yMin = Math.max(0, Math.min(minLocal, allTimeLow) - 2);
@@ -351,7 +379,7 @@ export class GameAnalyticsComponent {
       borderColor: '#ff5252',
       borderWidth: 2,
       borderDash: [6, 4],
-      adjustScaleRange: true, // belt-and-suspenders: also asks the plugin to extend the scale
+      adjustScaleRange: true,
       label: {
         display: true,
         content: dateLabel
@@ -367,11 +395,9 @@ export class GameAnalyticsComponent {
       },
     };
 
-    // Preserve patch annotations
     const currentAnnotations = ((this.lineChartOptions.plugins?.annotation as any)?.annotations ??
       {}) as Record<string, unknown>;
 
-    // New reference all the way down → ng2-charts ngOnChanges fires
     this.lineChartOptions = {
       ...this.lineChartOptions,
       scales: {

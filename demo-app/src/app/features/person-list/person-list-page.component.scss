@@ -70,7 +70,7 @@
   border-radius: 20px;
   border: 1px solid currentColor;
 
-  &.pill-admin     { color: #ffc107; border-color: rgba(255, 193, 7, 0.35); }
-  &.pill-moderator { color: #00d6a0; border-color: rgba(0, 214, 160, 0.35); }
-  &.pill-player    { color: #a497c6; border-color: rgba(164, 151, 198, 0.35); }
+  &.pill-admin     { color: var(--color-gold); border-color: rgba(255, 193, 7, 0.35); }
+  &.pill-moderator { color: var(--color-accent); border-color: rgba(0, 214, 160, 0.35); }
+  &.pill-player    { color: var(--color-text-muted); border-color: rgba(164, 151, 198, 0.35); }
 }

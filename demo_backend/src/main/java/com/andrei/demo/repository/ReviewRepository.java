@@ -11,7 +11,6 @@ import java.util.UUID;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, UUID> {
-    // Custom method for our edge case validation!
     boolean existsByAuthorIdAndGameId(UUID authorId, UUID gameId);
 
     List<Review> findByGameId(UUID gameId);

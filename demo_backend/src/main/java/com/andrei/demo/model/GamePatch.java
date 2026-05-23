@@ -18,11 +18,11 @@ public class GamePatch {
     private VideoGame videoGame;
 
     @Column(nullable = false)
-    private String version; // ex: "v1.0.2" sau "Day One Patch"
+    private String version;
 
     @Column(length = 1000)
-    private String description; // Ce s-a schimbat pe scurt
+    private String description;
 
     @Column(nullable = false)
-    private LocalDate releaseDate; // Data la care a fost lansat patch-ul
+    private LocalDate releaseDate;
 }

@@ -1,4 +1,3 @@
-// demo_backend/src/main/java/com/andrei/demo/service/VideoGameService.java
 package com.andrei.demo.service;
 
 import com.andrei.demo.model.Person;
@@ -31,12 +30,6 @@ public class VideoGameService {
     private final PersonRepository personRepository;
     private final PriceHistoryRepository priceHistoryRepository;
 
-    // ── Shared helper ────────────────────────────────────────────────────────
-
-    /**
-     * Returns the authenticated moderator, or null if the caller is an admin.
-     * Throws if a moderator tries to touch a game that isn't their studio's.
-     */
     private Person getModeratorIfApplicable() {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null) return null;
@@ -51,7 +44,7 @@ public class VideoGameService {
     }
 
     private void assertModeratorOwnsGame(Person moderator, VideoGame game) {
-        if (moderator == null) return; // admin — no restriction
+        if (moderator == null) return; //
         if (moderator.getStudio() == null
                 || !moderator.getStudio().getId().equals(game.getStudio().getId())) {
             throw new ValidationException(
@@ -59,7 +52,6 @@ public class VideoGameService {
         }
     }
 
-    // ── CRUD ─────────────────────────────────────────────────────────────────
 
     public List<VideoGame> getAllVideoGames() {
         return videoGameRepository.findAll();
@@ -86,10 +78,9 @@ public class VideoGameService {
                 .orElseThrow(() -> new ValidationException(
                         "Studio with ID " + dto.getStudioId() + " not found."));
 
-        // Moderator must belong to the chosen studio
         Person moderator = getModeratorIfApplicable();
         assertModeratorOwnsGame(moderator,
-                buildGameWithStudio(studio)); // reuse studio check
+                buildGameWithStudio(studio));
 
         VideoGame game = new VideoGame();
         game.setTitle(dto.getTitle());
@@ -108,13 +99,12 @@ public class VideoGameService {
         Person moderator = getModeratorIfApplicable();
         assertModeratorOwnsGame(moderator, existing);
 
-        recordPriceIfChanged(existing, dto.getPrice());// add to the past prices when the game changes
+        recordPriceIfChanged(existing, dto.getPrice());
 
         existing.setTitle(dto.getTitle());
         existing.setPrice(dto.getPrice());
         existing.setCoverImageUrl(dto.getCoverImageUrl());
 
-        // Studio change only allowed for admins
         if (dto.getStudioId() != null && moderator == null) {
             studioRepository.findById(dto.getStudioId())
                     .ifPresent(existing::setStudio);
@@ -129,7 +119,6 @@ public class VideoGameService {
                 .orElseThrow(() -> new ValidationException(
                         "Cannot delete. Video Game with ID " + gameId + " not found."));
 
-        // Studio check for moderators
         Person moderator = getModeratorIfApplicable();
         assertModeratorOwnsGame(moderator, game);
 
@@ -164,7 +153,6 @@ public class VideoGameService {
         if (updates.containsKey("coverImageUrl")) {
             existing.setCoverImageUrl((String) updates.get("coverImageUrl"));
         }
-        // Studio patch only for admin
         if (updates.containsKey("studioId") && moderator == null) {
             UUID newStudioId = UUID.fromString((String) updates.get("studioId"));
             Studio s = studioRepository.findById(newStudioId)
@@ -188,7 +176,6 @@ public class VideoGameService {
                 processedTitle, studioName, maxPrice, sort);
     }
 
-    // ── Private helpers ───────────────────────────────────────────────────────
 
     private VideoGame buildGameWithStudio(Studio studio) {
         VideoGame tmp = new VideoGame();

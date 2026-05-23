@@ -1,4 +1,3 @@
-// demo-app/src/app/features/video-game-details/video-game-details-page.component.ts
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -65,7 +64,6 @@ export class VideoGameDetailsPageComponent implements OnInit {
     });
   }
 
-  // --- Game ---
   loadGame(): void {
     this.videoGameService.getVideoGameById(this.gameId!).subscribe({
       next: (data) => {
@@ -95,7 +93,6 @@ export class VideoGameDetailsPageComponent implements OnInit {
     }
   }
 
-  // --- Reviews ---
   loadReviews(): void {
     this.reviewService.getReviewsForGame(this.gameId!).subscribe({
       next: (data) => {
@@ -155,7 +152,6 @@ export class VideoGameDetailsPageComponent implements OnInit {
     });
   }
 
-  // --- Patches ---
   get canManagePatches(): boolean {
     const role = this.loginStore.role();
     return role === 'ADMIN' || role === 'MODERATOR';

@@ -10,7 +10,6 @@ export class PersonListStore {
   private readonly pendingRequests = signal(0);
 
   readonly persons = signal<Person[]>([]);
-  // changed: Now holds a string message or null
   readonly hasError = signal<string | null>(null);
   readonly isLoading = computed(() => this.pendingRequests() > 0);
 
@@ -22,15 +21,11 @@ export class PersonListStore {
     this.pendingRequests.update((count) => Math.max(0, count - 1));
   }
 
-  // helper to extract the exact message from Spring Boot
   private extractError(err: HttpErrorResponse): string {
     if (typeof err.error === 'string') return err.error;
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-return
     if (err.error?.message) return err.error.message;
-    // catch validation error objects
     if (err.error && typeof err.error === 'object'){
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       const fieldErrors = Object.values(err.error);
       if(fieldErrors.length > 0){
         return fieldErrors.join(' | ');

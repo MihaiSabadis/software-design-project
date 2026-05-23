@@ -1,4 +1,3 @@
-// demo_backend/src/main/java/com/andrei/demo/controller/PersonController.java
 package com.andrei.demo.controller;
 
 import com.andrei.demo.config.ValidationException;
@@ -54,7 +53,6 @@ public class PersonController {
                 && auth.getAuthorities().stream()
                 .anyMatch(a -> Objects.equals(a.getAuthority(), "ROLE_ADMIN"));
 
-        // Block self-promotion to ADMIN through the public endpoint
         if (personDTO.getRole() == Role.ADMIN && !callerIsAdmin) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("Admin accounts can only be created by an existing admin.");

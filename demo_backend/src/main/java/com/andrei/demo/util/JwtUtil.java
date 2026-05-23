@@ -40,7 +40,6 @@ public class JwtUtil {
                         "userId", person.getId(),
                         "role", person.getRole().name()
                 ))
-                // the token will be expired in 10 hours
                 .expiration(new Date(System.currentTimeMillis() + 1000* 60 * 60 *10))
                 .signWith(getSignInKey(), Jwts.SIG.HS256)
                 .compact();
@@ -57,24 +56,21 @@ public class JwtUtil {
     public boolean checkClaims(String token){
         Claims claims = getAllClaimsFromToken(token);
 
-        // check issuer
         if (!"demo-spring-boot-backend".equals(claims.getIssuer())) {
             log.error("Invalid token issuer");
             return false;
         }
 
-        // check expiration
         if (claims.getExpiration().before(getCurrentDate())) {
             log.error("Token has expired");
             return false;
         }
 
-        // check iat
         if (claims.getIssuedAt() == null || claims.getIssuedAt().after(getCurrentDate())) {
             log.error("Token issued at date is invalid");
             return false;
         }
-        // check claims
+
         if (claims.get("userId") == null || claims.get("role") == null) {
             log.error("Token claims are invalid: does not contain userId and role");
             return false;

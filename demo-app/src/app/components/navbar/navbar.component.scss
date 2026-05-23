@@ -11,12 +11,11 @@
   gap: 1.5rem;
   padding: 0 1.5rem;
 
-  background: #130d2e;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
   backdrop-filter: blur(8px);
 }
 
-// ── Brand ────────────────────────────────────────────────────────────────────
 
 .brand {
   display: flex;
@@ -30,18 +29,17 @@
   .brand-name {
     font-size: 1rem;
     font-weight: 800;
-    color: #ffffff;
+    color: var(--color-text);
     letter-spacing: -0.3px;
 
     // Accent the last letters
-    background: linear-gradient(90deg, #ffffff 0%, #00d6a0 100%);
+    background: linear-gradient(90deg, var(--color-accent));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 }
 
-// ── Nav links ────────────────────────────────────────────────────────────────
 
 .nav-links {
   display: flex;
@@ -60,7 +58,7 @@
     border-radius: 7px;
     font-size: 0.85rem;
     font-weight: 500;
-    color: #a497c6;
+    color: var(--color-text-muted);
     text-decoration: none;
     transition: color 0.15s, background 0.15s;
     white-space: nowrap;
@@ -68,12 +66,12 @@
     .nav-icon { font-size: 0.9rem; }
 
     &:hover {
-      color: #ffffff;
-      background: rgba(255, 255, 255, 0.06);
+      color: var(--color-text);
+      background: var(--color-surface-2);
     }
 
     &.active {
-      color: #00d6a0;
+      color: var(--color-accent);
       background: rgba(0, 214, 160, 0.08);
 
       // Underline indicator
@@ -92,7 +90,6 @@
   }
 }
 
-// ── Right side ───────────────────────────────────────────────────────────────
 
 .nav-right {
   display: flex;
@@ -110,9 +107,9 @@
   border-radius: 20px;
   border: 1px solid currentColor;
 
-  &.role-admin    { color: #ffc107; border-color: rgba(255, 193, 7, 0.4); }
-  &.role-moderator{ color: #00d6a0; border-color: rgba(0, 214, 160, 0.4); }
-  &.role-player   { color: #a497c6; border-color: rgba(164, 151, 198, 0.4); }
+  &.role-admin    { color: var(--color-gold); border-color: rgba(255, 193, 7, 0.4); }
+  &.role-moderator{ color: var(--color-accent); border-color: rgba(0, 214, 160, 0.4); }
+  &.role-player   { color: var(--color-text-muted); border-color: rgba(164, 151, 198, 0.4); }
 }
 
 .btn-logout {
@@ -121,16 +118,16 @@
   gap: 0.3rem;
   padding: 0.3rem 0.75rem;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--color-border);
   border-radius: 7px;
-  color: #a497c6;
+  color: var(--color-text-muted);
   font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s;
 
   &:hover {
-    border-color: #e53935;
-    color: #ff6b6b;
+    border-color: var(--color-danger);
+    color: var(--color-danger);
   }
 }
