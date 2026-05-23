@@ -18,7 +18,6 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @RestController
 @AllArgsConstructor
-@CrossOrigin
 public class LoginController {
     private final SecurityService securityService;
     private final PersonService personService;

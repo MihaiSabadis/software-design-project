@@ -26,7 +26,7 @@ export class VideoGameService {
     let params = new HttpParams().set('sortBy', sortBy).set('sortDir', sortDir);
 
     if (title) params = params.set('title', title);
-    if (developer) params = params.set('developer', developer);
+    if (developer) params = params.set('studioName', developer);
     if (maxPrice) params = params.set('maxPrice', maxPrice.toString());
 
     return this.http.get<VideoGame[]>(this.apiUrl, { params });

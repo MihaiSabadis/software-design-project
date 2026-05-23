@@ -17,7 +17,7 @@ public class ReviewCreateDTO {
 
     @NotNull(message = "Score is required")
     @Min(value = 1, message = "Score must be at least 1")
-    @Max(value = 10, message = "Score cannot be greater than 10")
+    @Max(value = 5, message = "Score cannot be greater than 5")
     private Integer score;
 
     @Size(max = 1000, message = "Comment cannot exceed 1000 characters")

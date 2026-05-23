@@ -20,18 +20,21 @@
 
   .game-cover-container {
     width: 100%;
-    height: 240px;
-    background-color: var(--color-bg);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    aspect-ratio: 2 / 3;
+    overflow: hidden;
 
     img {
       width: 100%;
       height: 100%;
-      object-fit: contain;
+      object-fit: cover;
+      object-position: center top;
       display: block;
+      transition: transform 0.35s ease;
     }
+  }
+
+  &:hover .game-cover-container img {
+    transform: scale(1.04);
   }
 
   .card-content {

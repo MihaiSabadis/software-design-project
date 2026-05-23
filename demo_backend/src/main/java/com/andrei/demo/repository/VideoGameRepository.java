@@ -20,7 +20,7 @@ public interface VideoGameRepository extends JpaRepository<VideoGame, UUID> {
 
     @Query("SELECT v FROM VideoGame v WHERE " +
             "(:searchTitle IS NULL OR LOWER(v.title) LIKE :searchTitle) AND " +
-            "(:studioName  IS NULL OR v.studio.name = :studioName) AND " +
+            "(:studioName IS NULL OR LOWER(v.studio.name) LIKE :studioName) AND " +
             "(:maxPrice    IS NULL OR v.price <= :maxPrice)")
     List<VideoGame> searchAndFilterGames(
             @Param("searchTitle") String searchTitle,

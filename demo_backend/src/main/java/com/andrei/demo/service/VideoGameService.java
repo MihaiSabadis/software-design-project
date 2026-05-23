@@ -9,6 +9,7 @@ import com.andrei.demo.repository.PriceHistoryRepository;
 import com.andrei.demo.repository.PersonRepository;
 import com.andrei.demo.repository.StudioRepository;
 import com.andrei.demo.repository.VideoGameRepository;
+import com.andrei.demo.service.CheapSharkService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ValidationException;
 import lombok.AllArgsConstructor;
@@ -29,6 +30,7 @@ public class VideoGameService {
     private final StudioRepository studioRepository;
     private final PersonRepository personRepository;
     private final PriceHistoryRepository priceHistoryRepository;
+    private final CheapSharkService cheapSharkService;
 
     private Person getModeratorIfApplicable() {
         var auth = SecurityContextHolder.getContext().getAuthentication();
@@ -79,14 +81,20 @@ public class VideoGameService {
                         "Studio with ID " + dto.getStudioId() + " not found."));
 
         Person moderator = getModeratorIfApplicable();
-        assertModeratorOwnsGame(moderator,
-                buildGameWithStudio(studio));
+        assertModeratorOwnsGame(moderator, buildGameWithStudio(studio));
 
         VideoGame game = new VideoGame();
         game.setTitle(dto.getTitle());
         game.setPrice(dto.getPrice());
-        game.setCoverImageUrl(dto.getCoverImageUrl());
         game.setStudio(studio);
+
+        String coverUrl = dto.getCoverImageUrl();
+        if (coverUrl == null || coverUrl.isBlank()) {
+            coverUrl = cheapSharkService
+                    .findPortraitCoverUrl(dto.getTitle())
+                    .orElse(null);
+        }
+        game.setCoverImageUrl(coverUrl);
 
         return videoGameRepository.save(game);
     }
@@ -103,7 +111,14 @@ public class VideoGameService {
 
         existing.setTitle(dto.getTitle());
         existing.setPrice(dto.getPrice());
-        existing.setCoverImageUrl(dto.getCoverImageUrl());
+
+        String coverUrl = dto.getCoverImageUrl();
+        if (coverUrl == null || coverUrl.isBlank()) {
+            coverUrl = cheapSharkService
+                    .findPortraitCoverUrl(dto.getTitle())
+                    .orElse(existing.getCoverImageUrl());   // keep old if lookup fails
+        }
+        existing.setCoverImageUrl(coverUrl);
 
         if (dto.getStudioId() != null && moderator == null) {
             studioRepository.findById(dto.getStudioId())
@@ -172,8 +187,11 @@ public class VideoGameService {
         String processedTitle = (title == null || title.isBlank())
                 ? null
                 : "%" + title.toLowerCase() + "%";
+        String processedStudio = (studioName == null || studioName.isBlank())
+                ? null
+                : "%" + studioName.toLowerCase() + "%";
         return videoGameRepository.searchAndFilterGames(
-                processedTitle, studioName, maxPrice, sort);
+                processedTitle, processedStudio, maxPrice, sort);
     }
 
 

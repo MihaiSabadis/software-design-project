@@ -49,6 +49,7 @@ export const routes: Routes = [
   },
   {
     path: 'games/:id',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./features/video-game-details/video-game-details-page.component').then(
         (m) => m.VideoGameDetailsPageComponent,

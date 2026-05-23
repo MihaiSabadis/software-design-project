@@ -137,6 +137,44 @@ public class CheapSharkService {
         }
     }
 
+    public Optional<String> findPortraitCoverUrl(String title) {
+        return findCheapSharkGameId(title).flatMap(this::resolveSteamCoverUrl);
+    }
+
+    private Optional<String> resolveSteamCoverUrl(String csGameId) {
+        URI uri = UriComponentsBuilder
+                .fromUriString(BASE_URL + "/games")
+                .queryParam("id", csGameId)
+                .build()
+                .encode()
+                .toUri();
+
+        try {
+            ResponseEntity<String> resp = restTemplate.getForEntity(uri, String.class);
+            if (!resp.getStatusCode().is2xxSuccessful() || resp.getBody() == null) {
+                return Optional.empty();
+            }
+
+            JsonNode root = objectMapper.readTree(resp.getBody());
+            String steamAppId = root.path("info").path("steamAppID").asText(null);
+
+            if (steamAppId == null || steamAppId.isBlank()) {
+                log.info("[CheapShark] No steamAppID for csGameId={}", csGameId);
+                return Optional.empty();
+            }
+
+            String url = "https://cdn.cloudflare.steamstatic.com/steam/apps/"
+                    + steamAppId + "/library_600x900.jpg";
+            log.info("[CheapShark] Resolved portrait cover URL: {}", url);
+            return Optional.of(url);
+
+        } catch (Exception e) {
+            log.warn("[CheapShark] Portrait lookup failed for csGameId={} — {}: {}",
+                    csGameId, e.getClass().getSimpleName(), e.getMessage());
+            return Optional.empty();
+        }
+    }
+
     public void enrichWithCheapSharkData(String csGameId, ExternalGameDataDTO dto) {
         URI uri = UriComponentsBuilder
                 .fromUriString(BASE_URL + "/games")

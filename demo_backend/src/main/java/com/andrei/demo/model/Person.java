@@ -1,5 +1,6 @@
 package com.andrei.demo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -23,6 +24,7 @@ public class Person {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @JsonIgnore
     @Column(name = "password", nullable = false)
     private String password;
 
