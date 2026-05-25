@@ -16,7 +16,7 @@ public class StableBaselineStrategy implements PricePredictionStrategy {
             return new ArrayList<>();
         }
 
-        // Get the average of up to the last 3 price points
+        // average from last 3 points
         int limit = Math.min(3, prices.size());
         double sum = 0;
         for (int i = prices.size() - limit; i < prices.size(); i++) {
@@ -27,12 +27,12 @@ public class StableBaselineStrategy implements PricePredictionStrategy {
         averagePrice = Math.round(averagePrice * 100.0) / 100.0;
 
         List<PricePointDTO> predictions = new ArrayList<>();
-        var lastHistorical = prices.get(prices.size() - 1);
+        var lastHistorical = prices.getLast();
 
-        // 1) Anchor point
+        // start last price point
         predictions.add(new PricePointDTO(lastHistorical.getDate(), lastHistorical.getPrice()));
 
-        // 2) Future predictions (Flat line of the recent average)
+        // future predictions (flat line of the recent average)
         LocalDate lastDate = lastHistorical.getDate();
         for (int i = intervalDays; i <= daysIntoFuture; i += intervalDays) {
             LocalDate futureDate = lastDate.plusDays(i);
